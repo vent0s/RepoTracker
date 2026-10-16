@@ -1,0 +1,4 @@
+interface:
+  display_name: "commits"
+  short_description: "提交当前分支变更并生成中文提交摘要、开发日志与进度定位，随后推送"
+  default_prompt: "Use $commits 审查并提交当前分支变更，生成开发日志，并推送到远程。"

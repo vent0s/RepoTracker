@@ -1,0 +1,4 @@
+interface:
+  display_name: "项目进度与卡点盘点"
+  short_description: "对照需求与实现证据盘点进度和卡点，生成可跨项目使用的状态流程图"
+  default_prompt: "用 $project-progress 盘点当前项目的完整需求、实际进度和卡点，并画出蓝色可推进、橙色有卡点、绿色完成且右下角带勾的流程图。"

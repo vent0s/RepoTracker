@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0-windows7.0": {
+      "repotracker.core": {
+        "type": "Project"
+      },
+      "repotracker.desktop": {
+        "type": "Project",
+        "dependencies": {
+          "RepoTracker.Core": "[1.0.0, )",
+          "RepoTracker.Infrastructure": "[1.0.0, )"
+        }
+      },
+      "repotracker.infrastructure": {
+        "type": "Project",
+        "dependencies": {
+          "RepoTracker.Core": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}

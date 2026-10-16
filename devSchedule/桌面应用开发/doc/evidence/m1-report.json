@@ -1,0 +1,27 @@
+{
+  "Passed": true,
+  "Os": "Microsoft Windows NT 10.0.19045.0",
+  "Runtime": "10.0.5",
+  "Checks": [
+    "taskbar style, unowned window, physical bounds PixelRect { X = -772, Y = 268, Width = 760, Height = 760, Right = -12, Bottom = 1028 }; DPI 96; monitor PixelRect { X = -1920, Y = 0, Width = 1920, Height = 1080, Right = 0, Bottom = 1080 }",
+    "initial foreground=5181908, panel=5181908, active=True",
+    "physical monitor placement: PixelRect { X = 0, Y = 0, Width = 1920, Height = 1080, Right = 1920, Bottom = 1080 }, DPI=96, panel=PixelRect { X = 20, Y = 20, Width = 760, Height = 760, Right = 780, Bottom = 780 }",
+    "physical monitor placement: PixelRect { X = -1920, Y = 0, Width = 1920, Height = 1080, Right = 0, Bottom = 1080 }, DPI=96, panel=PixelRect { X = -1900, Y = 20, Width = 760, Height = 760, Right = -1140, Bottom = 780 }",
+    "collapse button and Windows SC_RESTORE",
+    "Escape keyboard input",
+    "real second application process: IPC activation and clean secondary exit",
+    "real owned settings dialog, close, focus guard release",
+    "real native folder picker: owner, no premature collapse, cancellation",
+    "real context menu open/close",
+    "keep expanded survives actual focus transfer to another process",
+    "default focus loss minimizes; taskbar entry remains",
+    "exit menu command invoked; process shutdown checked by parent test"
+  ],
+  "Error": null,
+  "NotCovered": [
+    "Windows 11",
+    "physical 150% / 200% DPI and mixed-DPI transitions",
+    "taskbar actual mouse click / pinning / auto-hide",
+    "monitor hot unplug"
+  ]
+}

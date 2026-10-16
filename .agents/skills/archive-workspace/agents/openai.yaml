@@ -1,0 +1,4 @@
+interface:
+  display_name: "archive-workspace"
+  short_description: "安全归档规划工作区并核验历史快照"
+  default_prompt: "Use $archive-workspace 归档指定规划工作区，并验证快照和活动引用。"

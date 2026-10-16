@@ -1,0 +1,37 @@
+{
+  "Passed": true,
+  "Os": "Microsoft Windows NT 10.0.19045.0",
+  "Runtime": "10.0.5",
+  "Checks": [
+    "taskbar style, unowned window, physical bounds PixelRect { X = -772, Y = 268, Width = 760, Height = 760, Right = -12, Bottom = 1028 }; DPI 96; monitor PixelRect { X = -1920, Y = 0, Width = 1920, Height = 1080, Right = 0, Bottom = 1080 }",
+    "initial foreground=2560060, panel=2560060, active=True",
+    "physical monitor placement: PixelRect { X = 0, Y = 0, Width = 1920, Height = 1080, Right = 1920, Bottom = 1080 }, DPI=96, panel=PixelRect { X = 20, Y = 20, Width = 760, Height = 760, Right = 780, Bottom = 780 }",
+    "physical monitor placement: PixelRect { X = -1920, Y = 0, Width = 1920, Height = 1080, Right = 0, Bottom = 1080 }, DPI=96, panel=PixelRect { X = -1900, Y = 20, Width = 760, Height = 760, Right = -1140, Bottom = 780 }",
+    "collapse button and Windows SC_RESTORE",
+    "Escape keyboard input",
+    "real second application process: IPC activation and clean secondary exit",
+    "real owned settings dialog, close, focus guard release",
+    "real native folder picker: owner, no premature collapse, cancellation",
+    "real context menu open/close",
+    "keep expanded survives actual focus transfer to another process",
+    "default focus loss minimizes; taskbar entry remains",
+    "group form: reserved/duplicate name stays editable; trimmed name and empty groups persist",
+    "six real detached Git fixtures added through path/group dialogs: \u5DE5\u4F5C 3 / \u4E2A\u4EBA 2 / \u672A\u5206\u7EC4 1",
+    "missing path error preserves form; cancel leaves list intact; subdirectory duplicate selects existing row",
+    "real rename, row move menu and delete confirmation: stable IDs, counts 2/4, protected ungrouped",
+    "remove confirmation and undo restore stable record; locked file save failure keeps form and previous state",
+    "custom and ungrouped collapse persisted; all fixture file and Git metadata hashes unchanged",
+    "real local refresh: clean detached / no upstream, file event updates dirty state while minimized and groups collapsed",
+    "unavailable directory retains record and last result, then recovers after restoring the isolated fixture",
+    "M4 real settings: default OFF, enable local-only skips, local refresh continues, disable saved; no network-enabled fixture has a remote URL",
+    "M4 real source editor: invalid-input retention, draft scp preview, add/edit/delete, source badge update and unchanged remote config",
+    "exit menu command invoked; process shutdown checked by parent test"
+  ],
+  "Error": null,
+  "NotCovered": [
+    "Windows 11",
+    "physical 150% / 200% DPI and mixed-DPI transitions",
+    "taskbar actual mouse click / pinning / auto-hide",
+    "monitor hot unplug"
+  ]
+}

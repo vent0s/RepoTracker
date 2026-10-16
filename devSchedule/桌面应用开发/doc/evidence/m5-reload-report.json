@@ -1,0 +1,18 @@
+{
+  "Passed": true,
+  "Os": "Microsoft Windows NT 10.0.19045.0",
+  "Runtime": "10.0.5",
+  "Checks": [
+    "new application process reloaded six repository IDs, renamed group, membership 2/4 and both collapsed states",
+    "new application process reloaded remote OFF and the edited custom source rule",
+    "M5 new process restored intervals, concurrency, keep-expanded, light theme, 125% scale and isolated startup registration; isolated entry removed"
+  ],
+  "Error": null,
+  "NotCovered": [
+    "Windows 11",
+    "physical 150% / 200% DPI and mixed-DPI transitions",
+    "taskbar actual mouse click / pinning / auto-hide",
+    "monitor hot unplug",
+    "real Windows logon / current-user Run writes; UI uses isolated startup adapter"
+  ]
+}

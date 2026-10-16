@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Push"
+  short_description: "推送当前仓库分支"
+  default_prompt: "Use $git-push to push the current git branch to its remote."

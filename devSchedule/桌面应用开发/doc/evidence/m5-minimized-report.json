@@ -1,0 +1,16 @@
+{
+  "Passed": true,
+  "Os": "Microsoft Windows NT 10.0.19045.0",
+  "Runtime": "10.0.5",
+  "Checks": [
+    "M5 actual --minimized process starts in taskbar without activation"
+  ],
+  "Error": null,
+  "NotCovered": [
+    "Windows 11",
+    "physical 150% / 200% DPI and mixed-DPI transitions",
+    "taskbar actual mouse click / pinning / auto-hide",
+    "monitor hot unplug",
+    "real Windows logon / current-user Run writes; UI uses isolated startup adapter"
+  ]
+}

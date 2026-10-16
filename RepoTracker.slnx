@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RepoTracker.Core/RepoTracker.Core.csproj" />
+    <Project Path="src/RepoTracker.Infrastructure/RepoTracker.Infrastructure.csproj" />
+    <Project Path="src/RepoTracker.Desktop/RepoTracker.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RepoTracker.Core.Tests/RepoTracker.Core.Tests.csproj" />
+    <Project Path="tests/RepoTracker.IntegrationTests/RepoTracker.IntegrationTests.csproj" />
+    <Project Path="tests/RepoTracker.Desktop.Tests/RepoTracker.Desktop.Tests.csproj" />
+    <Project Path="tests/RepoTracker.Desktop.TestHost/RepoTracker.Desktop.TestHost.csproj" />
+  </Folder>
+</Solution>

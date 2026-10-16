@@ -1,0 +1,15 @@
+{
+  "Passed": true,
+  "Os": "Microsoft Windows NT 10.0.19045.0",
+  "Runtime": "10.0.5",
+  "Checks": [
+    "new application process reloaded six repository IDs, renamed group, membership 2/4 and both collapsed states"
+  ],
+  "Error": null,
+  "NotCovered": [
+    "Windows 11",
+    "physical 150% / 200% DPI and mixed-DPI transitions",
+    "taskbar actual mouse click / pinning / auto-hide",
+    "monitor hot unplug"
+  ]
+}

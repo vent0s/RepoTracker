@@ -1,0 +1,594 @@
+{
+  "file": {
+    "id": "00000000-0000-4000-8000-000000000002",
+    "name": "RepoTracker"
+  },
+  "page": {
+    "id": "00000000-0000-4000-8000-000000000003",
+    "name": "01 · RepoTracker 产品原型"
+  },
+  "boardCount": 40,
+  "shapes": 4074,
+  "texts": 1010,
+  "interactions": 293,
+  "flows": [
+    {
+      "name": "RepoTracker / groups",
+      "startingBoardId": "50f3374d-760c-80de-8008-cc107732d759"
+    },
+    {
+      "name": "RepoTracker / guide",
+      "startingBoardId": "50f3374d-760c-80de-8008-cbf8806e14d5"
+    },
+    {
+      "name": "RepoTracker / main",
+      "startingBoardId": "50f3374d-760c-80de-8008-cc069aad4c37"
+    },
+    {
+      "name": "RepoTracker / empty",
+      "startingBoardId": "50f3374d-760c-80de-8008-cbf6b156e511"
+    },
+    {
+      "name": "RepoTracker / menu",
+      "startingBoardId": "50f3374d-760c-80de-8008-cbf88a9cccd8"
+    },
+    {
+      "name": "RepoTracker / light",
+      "startingBoardId": "50f3374d-760c-80de-8008-cbf6be466ab0"
+    },
+    {
+      "name": "RepoTracker / offline",
+      "startingBoardId": "50f3374d-760c-80de-8008-cbf6b1f64843"
+    }
+  ],
+  "components": 6,
+  "colors": 30,
+  "boards": {
+    "main": {
+      "id": "50f3374d-760c-80de-8008-cbf6ad041fc9",
+      "name": "01 / 仓库面板 · 内容视图",
+      "x": 0,
+      "y": 0,
+      "width": 760,
+      "height": 590
+    },
+    "empty": {
+      "id": "50f3374d-760c-80de-8008-cbf6b156e511",
+      "name": "02 / 首次使用 · 空状态",
+      "x": 840,
+      "y": 0,
+      "width": 760,
+      "height": 590
+    },
+    "offline": {
+      "id": "50f3374d-760c-80de-8008-cbf6b1f64843",
+      "name": "03 / 离线与过期数据",
+      "x": 1680,
+      "y": 0,
+      "width": 760,
+      "height": 630
+    },
+    "pinned": {
+      "id": "50f3374d-760c-80de-8008-cbf6b6e8b808",
+      "name": "04 / 面板保持展开",
+      "x": 2520,
+      "y": 0,
+      "width": 760,
+      "height": 590
+    },
+    "light": {
+      "id": "50f3374d-760c-80de-8008-cbf6be466ab0",
+      "name": "05 / 浅色主题对照",
+      "x": 3360,
+      "y": 0,
+      "width": 760,
+      "height": 590
+    },
+    "add": {
+      "id": "50f3374d-760c-80de-8008-cbf761f33eed",
+      "name": "06 / 添加仓库 · 选择目录",
+      "x": 0,
+      "y": 760,
+      "width": 560,
+      "height": 400
+    },
+    "ready": {
+      "id": "50f3374d-760c-80de-8008-cbf763ed238c",
+      "name": "07 / 添加仓库 · 校验通过",
+      "x": 640,
+      "y": 760,
+      "width": 560,
+      "height": 460
+    },
+    "invalid": {
+      "id": "50f3374d-760c-80de-8008-cbf765c24b06",
+      "name": "08 / 添加仓库 · 校验失败",
+      "x": 1280,
+      "y": 760,
+      "width": 560,
+      "height": 400
+    },
+    "remove": {
+      "id": "50f3374d-760c-80de-8008-cbf767c51cea",
+      "name": "09 / 移除跟踪确认",
+      "x": 1920,
+      "y": 760,
+      "width": 440,
+      "height": 272
+    },
+    "removed": {
+      "id": "50f3374d-760c-80de-8008-cbf76933f822",
+      "name": "10 / 移除完成 · 可撤销",
+      "x": 2440,
+      "y": 760,
+      "width": 760,
+      "height": 590
+    },
+    "folderNote": {
+      "id": "50f3374d-760c-80de-8008-cbf77589f2f6",
+      "name": "11 / 打开文件夹 · 原型说明",
+      "x": 3280,
+      "y": 760,
+      "width": 440,
+      "height": 250
+    },
+    "refreshNote": {
+      "id": "50f3374d-760c-80de-8008-cbf776b6c255",
+      "name": "12 / 本地刷新 · 原型说明",
+      "x": 3800,
+      "y": 760,
+      "width": 440,
+      "height": 250
+    },
+    "settings": {
+      "id": "50f3374d-760c-80de-8008-cbf79b0eff41",
+      "name": "13 / 设置 · 检查与启动",
+      "x": 0,
+      "y": 1420,
+      "width": 760,
+      "height": 650
+    },
+    "sources": {
+      "id": "50f3374d-760c-80de-8008-cbf79ebca862",
+      "name": "14 / 设置 · 已知来源",
+      "x": 840,
+      "y": 1420,
+      "width": 760,
+      "height": 650
+    },
+    "sourceAdd": {
+      "id": "50f3374d-760c-80de-8008-cbf7a2a8c324",
+      "name": "15 / 新建来源规则",
+      "x": 1680,
+      "y": 1420,
+      "width": 560,
+      "height": 520
+    },
+    "sourceSaved": {
+      "id": "50f3374d-760c-80de-8008-cbf7a4fd78f8",
+      "name": "16 / 来源规则已保存",
+      "x": 2320,
+      "y": 1420,
+      "width": 560,
+      "height": 300
+    },
+    "settingsOff": {
+      "id": "50f3374d-760c-80de-8008-cbf7a61cc903",
+      "name": "17 / 远程检查关闭",
+      "x": 2960,
+      "y": 1420,
+      "width": 760,
+      "height": 650
+    },
+    "settingsStartup": {
+      "id": "50f3374d-760c-80de-8008-cbf7a663c07d",
+      "name": "18 / 开机启动开启",
+      "x": 3800,
+      "y": 1420,
+      "width": 760,
+      "height": 650
+    },
+    "added": {
+      "id": "50f3374d-760c-80de-8008-cbf860448a37",
+      "name": "21 / 添加成功 · 7 个仓库",
+      "x": 0,
+      "y": 2180,
+      "width": 760,
+      "height": 654
+    },
+    "sourcesAdded": {
+      "id": "50f3374d-760c-80de-8008-cbf87ad576ac",
+      "name": "22 / 来源列表 · 新规则已生效",
+      "x": 840,
+      "y": 2180,
+      "width": 760,
+      "height": 722
+    },
+    "guide": {
+      "id": "50f3374d-760c-80de-8008-cbf8806e14d5",
+      "name": "00 / 设计说明与组件",
+      "x": 0,
+      "y": -940,
+      "width": 1440,
+      "height": 800
+    },
+    "tray": {
+      "id": "50f3374d-760c-80de-8008-cbf88a9cccd8",
+      "name": "19 / 应用菜单",
+      "x": 4440,
+      "y": 0,
+      "width": 290,
+      "height": 308
+    },
+    "quitNote": {
+      "id": "50f3374d-760c-80de-8008-cbf88d5ade27",
+      "name": "20 / 退出应用 · 原型说明",
+      "x": 4440,
+      "y": 760,
+      "width": 440,
+      "height": 250
+    },
+    "firstReady": {
+      "id": "50f3374d-760c-80de-8008-cbf901930bf7",
+      "name": "23 / 首次添加 · 校验通过",
+      "x": 1680,
+      "y": 2180,
+      "width": 560,
+      "height": 460
+    },
+    "firstMain": {
+      "id": "50f3374d-760c-80de-8008-cbf901cac7b6",
+      "name": "24 / 首次添加 · 1 个仓库",
+      "x": 2320,
+      "y": 2180,
+      "width": 760,
+      "height": 350
+    },
+    "remoteOff": {
+      "id": "50f3374d-760c-80de-8008-cbf90bc299c3",
+      "name": "25 / 远程检查关闭 · 本地模式",
+      "x": 3160,
+      "y": 2180,
+      "width": 760,
+      "height": 590
+    },
+    "taskbarClosed": {
+      "id": "50f3374d-760c-80de-8008-cc069aad4c37",
+      "name": "26 / 任务栏入口 · 收起",
+      "x": 0,
+      "y": -2060,
+      "width": 1440,
+      "height": 900
+    },
+    "taskbarOpen": {
+      "id": "50f3374d-760c-80de-8008-cc06a4e2c4c2",
+      "name": "27 / 任务栏入口 · 已展开",
+      "x": 1540,
+      "y": -2060,
+      "width": 1440,
+      "height": 900
+    },
+    "grouped": {
+      "id": "50f3374d-760c-80de-8008-cc107732d759",
+      "name": "28 / 手动分组 · 仓库面板",
+      "x": 0,
+      "y": -3380,
+      "width": 760,
+      "height": 760
+    },
+    "groupCollapsed": {
+      "id": "50f3374d-760c-80de-8008-cc110c8c4c35",
+      "name": "29 / 折叠工作分组",
+      "x": 840,
+      "y": -3380,
+      "width": 760,
+      "height": 568
+    },
+    "groupCreate": {
+      "id": "50f3374d-760c-80de-8008-cc112c41b8b2",
+      "name": "30 / 新建分组",
+      "x": 1680,
+      "y": -3380,
+      "width": 480,
+      "height": 328
+    },
+    "groupCreated": {
+      "id": "50f3374d-760c-80de-8008-cc115af0b754",
+      "name": "31 / 分组已创建 · 空组",
+      "x": 2240,
+      "y": -3380,
+      "width": 760,
+      "height": 804
+    },
+    "groupMove": {
+      "id": "50f3374d-760c-80de-8008-cc11a2611a39",
+      "name": "32 / 移动仓库到分组",
+      "x": 3080,
+      "y": -3380,
+      "width": 480,
+      "height": 442
+    },
+    "groupMoved": {
+      "id": "50f3374d-760c-80de-8008-cc11bd7418f9",
+      "name": "33 / 仓库已移入个人",
+      "x": 3640,
+      "y": -3380,
+      "width": 760,
+      "height": 760
+    },
+    "groupManage": {
+      "id": "50f3374d-760c-80de-8008-cc1208a19391",
+      "name": "34 / 管理手动分组",
+      "x": 4480,
+      "y": -3380,
+      "width": 560,
+      "height": 426
+    },
+    "groupRename": {
+      "id": "50f3374d-760c-80de-8008-cc121b4ec064",
+      "name": "35 / 重命名工作分组",
+      "x": 5120,
+      "y": -3380,
+      "width": 480,
+      "height": 328
+    },
+    "groupRenamed": {
+      "id": "50f3374d-760c-80de-8008-cc126f6a5c7b",
+      "name": "36 / 分组已重命名",
+      "x": 0,
+      "y": -4460,
+      "width": 760,
+      "height": 760
+    },
+    "groupDelete": {
+      "id": "50f3374d-760c-80de-8008-cc130d506377",
+      "name": "37 / 删除个人分组",
+      "x": 840,
+      "y": -4460,
+      "width": 480,
+      "height": 324
+    },
+    "groupDeleted": {
+      "id": "50f3374d-760c-80de-8008-cc134280730d",
+      "name": "38 / 分组删除 · 仓库保留",
+      "x": 1400,
+      "y": -4460,
+      "width": 760,
+      "height": 716
+    },
+    "groupPinned": {
+      "id": "50f3374d-760c-80de-8008-cc13dae1d7e6",
+      "name": "39 / 分组面板 · 保持展开",
+      "x": 2240,
+      "y": -4460,
+      "width": 760,
+      "height": 760
+    }
+  },
+  "outsideBoards": [],
+  "textOverflow": [],
+  "brokenTargets": [],
+  "overlappingBoards": [],
+  "routeChecks": [
+    [
+      "add-start",
+      true
+    ],
+    [
+      "add-select",
+      true
+    ],
+    [
+      "add-success",
+      true
+    ],
+    [
+      "first-add-start",
+      true
+    ],
+    [
+      "first-add-success",
+      true
+    ],
+    [
+      "remove-success",
+      true
+    ],
+    [
+      "remove-undo",
+      true
+    ],
+    [
+      "source-save",
+      true
+    ],
+    [
+      "source-result",
+      true
+    ],
+    [
+      "remote-disabled",
+      true
+    ],
+    [
+      "guide-taskbar",
+      true
+    ],
+    [
+      "taskbar-expand",
+      true
+    ],
+    [
+      "taskbar-collapse",
+      true
+    ],
+    [
+      "panel-collapse",
+      true
+    ],
+    [
+      "panel-settings",
+      true
+    ],
+    [
+      "panel-menu",
+      true
+    ],
+    [
+      "group-fold",
+      true
+    ],
+    [
+      "group-unfold",
+      true
+    ],
+    [
+      "group-create-start",
+      true
+    ],
+    [
+      "group-create-save",
+      true
+    ],
+    [
+      "group-move-start",
+      true
+    ],
+    [
+      "group-move-result",
+      true
+    ],
+    [
+      "group-manage",
+      true
+    ],
+    [
+      "group-rename-start",
+      true
+    ],
+    [
+      "group-rename-save",
+      true
+    ],
+    [
+      "group-delete-start",
+      true
+    ],
+    [
+      "group-delete-result",
+      true
+    ],
+    [
+      "group-pin",
+      true
+    ],
+    [
+      "group-unpin",
+      true
+    ]
+  ],
+  "stateChecks": {
+    "rowCounts": {
+      "main": 6,
+      "added": 7,
+      "removed": 5,
+      "firstMain": 1
+    },
+    "rowCountsValid": true,
+    "newSourceVisible": true,
+    "mainNoUpstream": true,
+    "remoteOffLabel": true,
+    "taskbarFlowStart": true,
+    "noTrayEntryCopy": true
+  },
+  "groupingChecks": {
+    "memberships": {
+      "grouped": {
+        "work": [
+          "repotracker",
+          "design-system",
+          "api-service"
+        ],
+        "personal": [
+          "local-notes",
+          "preview-worktree"
+        ],
+        "ungrouped": [
+          "archive-site"
+        ]
+      },
+      "groupCreated": {
+        "work": [
+          "repotracker",
+          "design-system",
+          "api-service"
+        ],
+        "personal": [
+          "local-notes",
+          "preview-worktree"
+        ],
+        "tools": [],
+        "ungrouped": [
+          "archive-site"
+        ]
+      },
+      "groupCollapsed": {
+        "work": [],
+        "personal": [
+          "local-notes",
+          "preview-worktree"
+        ],
+        "ungrouped": [
+          "archive-site"
+        ]
+      },
+      "groupMoved": {
+        "work": [
+          "design-system",
+          "api-service"
+        ],
+        "personal": [
+          "repotracker",
+          "local-notes",
+          "preview-worktree"
+        ],
+        "ungrouped": [
+          "archive-site"
+        ]
+      },
+      "groupRenamed": {
+        "work": [
+          "repotracker",
+          "design-system",
+          "api-service"
+        ],
+        "personal": [
+          "local-notes",
+          "preview-worktree"
+        ],
+        "ungrouped": [
+          "archive-site"
+        ]
+      },
+      "groupDeleted": {
+        "work": [
+          "repotracker",
+          "design-system",
+          "api-service"
+        ],
+        "ungrouped": [
+          "local-notes",
+          "preview-worktree",
+          "archive-site"
+        ]
+      }
+    },
+    "initialCounts": true,
+    "createdEmpty": true,
+    "foldOnlyHides": true,
+    "moveUnique": true,
+    "renamePreservesMembership": true,
+    "deletePreservesAll": true,
+    "taskbarGrouped": true
+  }
+}

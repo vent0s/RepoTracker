@@ -1,0 +1,4 @@
+interface:
+  display_name: "原型标注稿"
+  short_description: "依据实际产品原型与实现证据，制作可交互的进度、缺口和卡点标注 HTML"
+  default_prompt: "用 $annotate-prototype 对照当前项目的实际产品原型和实现证据，制作可离线打开的 HTML，逐处标明已实现范围、可继续工作、缺口、配合方和下一步。"

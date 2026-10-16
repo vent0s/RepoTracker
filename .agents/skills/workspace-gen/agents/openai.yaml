@@ -1,0 +1,4 @@
+interface:
+  display_name: "workspace-gen"
+  short_description: "创建带 Harness 的实施规划工作区"
+  default_prompt: "Use $workspace-gen 创建或更新一个带 Harness 的规划工作区。"

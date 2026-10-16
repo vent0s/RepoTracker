@@ -1,0 +1,22 @@
+# .NET build and diagnostics
+**/[Bb]in/
+**/[Oo]bj/
+**/TestResults/
+*.binlog
+*.coverage
+*.coveragexml
+
+# Local editor state
+.vs/
+.idea/
+*.rsuser
+*.sln.docstates
+*.DotSettings.user
+*.user
+*.suo
+
+# Reproducible test/build output and explicit local profiles
+.artifacts/
+tests/artifacts/
+/publish/
+/.local/

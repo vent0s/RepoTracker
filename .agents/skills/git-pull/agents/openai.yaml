@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Pull"
+  short_description: "安全拉取当前仓库分支"
+  default_prompt: "Use $git-pull to pull the current git branch only when it is safe."

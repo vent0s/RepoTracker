@@ -1,0 +1,23 @@
+[
+  {
+    "source": "user_WORKSTATION_2026-10-16_16_11_34.trx",
+    "total": 56,
+    "passed": 56,
+    "failed": 0,
+    "outcome": "Completed"
+  },
+  {
+    "source": "user_WORKSTATION_2026-10-16_16_11_34[1].trx",
+    "total": 33,
+    "passed": 33,
+    "failed": 0,
+    "outcome": "Completed"
+  },
+  {
+    "source": "user_WORKSTATION_2026-10-16_16_13_14.trx",
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "outcome": "Completed"
+  }
+]

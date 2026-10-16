@@ -1,95 +1,147 @@
 # RepoTracker
 
-> 公开版本说明：本机环境信息已脱敏，示例路径与标识不用于定位原始私有产物。
+一个 Windows 桌面常驻的 Git 仓库状态跟踪器：以任务栏中的应用按钮为入口，直接点击展开仓库面板，一览本机所有被跟踪仓库的来源（GitHub / GitLab / 自建 / 未知）、当前分支与工作区状态（未提交变更、未推送提交、未拉取提交），并提供「打开所在文件夹」「移除跟踪」两个快捷操作。
 
+> 本仓库本身托管在自建 GitLab 上，因此"用户自定义已知来源"从一开始就是刚需，而非锦上添花。
 
+## 定位与原则
 
-## Getting started
+- **只查看状态**：RepoTracker 不代替用户执行 commit / push / pull，不改工作区、分支或 upstream。可选远程 fetch 会更新 Git 元数据，开启前明确说明作用范围。
+- **手动添加**：不自动扫描磁盘。用户明确添加的仓库才进入跟踪列表，避免噪音和磁盘扫描开销。
+- **常驻但要轻**：应用全天挂在后台，内存占用、CPU 空转、磁盘 IO 都必须克制。状态采集分「本地 / 远程」两层，频率与触发方式不同（见下文）。
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## 功能特性
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### 跟踪列表（主面板）
 
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+每个 repo 一行，从左到右：
 
 ```
-cd existing_repo
-git remote add origin http://git.example.invalid/toolbox/repotracker.git
-git branch -M main
-git push -uf origin main
+┌─────────────────────────────────────────────────────────────┐
+│ [来源icon] repo名称        分支名   ●脏 ▲2未推 ▼5未拉   [📁][✕] │
+│ [来源icon] repo名称        分支名   ✓干净                [📁][✕] │
+│ [?]        repo名称        (无上游)                      [📁][✕] │
+└─────────────────────────────────────────────────────────────┘
+  位于任务栏上方，点击任务栏应用按钮展开；收起后按钮仍保留；底部为「+ 添加仓库」入口
 ```
 
-## Integrate with your tools
+- **来源 icon**：GitHub / GitLab 官方图标；自建实例由用户配置后显示自定义图标；无法匹配任何已知来源时显示问号图标。
+- **状态徽标**：未提交变更（脏）、未推送提交数（ahead）、未拉取提交数（behind）。
+- **快捷操作**（暂只规划这两个）：
+  - 📁 打开 repo 所在文件夹（资源管理器）；
+  - ✕ 从跟踪器移除该 repo（仅解除跟踪，不删文件）。
 
-* [Set up project integrations](http://git.example.invalid/toolbox/repotracker/-/settings/integrations)
+### 状态模型（两层分离）
 
-## Collaborate with your team
+| 层级 | 内容 | 获取成本 | 更新策略 |
+|------|------|----------|----------|
+| 本地状态 | 当前分支、是否有未提交变更、相对本地 remote-tracking ref 的 ahead/behind | 低（纯本地 IO） | 高频轮询 + 文件系统事件触发 |
+| 远程状态 | fetch 后基于本地已知上游重新计算的 ahead/behind 快照 | 高（网络 IO、可能要求凭证） | 低频轮询、错峰执行、失败静默容忍 |
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+远程层首次启动默认关闭，由用户主动开启；只允许受约束的 fetch 检查。fetch 不改工作区文件，但会下载对象和更新远程跟踪引用等 Git 元数据，不属于严格只读。失败（离线、凭证失效）时保留上次已知状态并标注「数据截至 HH:MM」，本地检查继续，不弹凭据窗口。
 
-## Test and Deploy
+### 手动分组
 
-Use the built-in continuous integration in GitLab.
+支持用户按工作、个人、工具等用途手动归类仓库。采用一层分组，每个仓库归属一个分组；未指定时放入系统默认的「未分组」。分组只组织列表，不移动目录、不改 Git 配置，也不影响来源识别与状态采集。
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+- 新建、重命名、删除自定义分组；名称去除首尾空白后为 1–30 个字符，同名不能重复。
+- 在仓库行的分组操作中选择目标分组；添加仓库时可选择分组，默认未分组。
+- 分组标题显示仓库数，点击展开或折叠；折叠只隐藏列表内容，后台检查照常进行。
+- 删除分组时说明受影响仓库数，确认后把仓库移回未分组，保留跟踪记录与本地文件。
+- 未分组不可重命名或删除，始终排在最后；自定义分组按创建顺序显示，排序与嵌套暂不纳入首轮。
 
-***
+2026-10-16 用户已确认任务栏与手动分组方案，手动分组纳入首个可用版本；当前已实现仓库添加、手动分组、跨重启恢复及本地状态持续检查。
 
-# Editing this README
+### 来源识别
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+1. 读取 repo 的 remote URL（优先 `origin`）；
+2. 与用户配置的「已知来源」列表匹配（按 host / host 通配符）；
+3. 内置 `github.com` / `gitlab.com` 两个默认规则，用户可增删自建 GitLab / Gitea / 其他 forge 的域名规则并指定图标；
+4. 无匹配 → 未知来源图标。
 
-## Suggestions for a good README
+### 添加 / 移除仓库
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+- 添加：选择文件夹 → 校验其为 git 仓库 → 读 remote URL → 识别来源 → 入列。
+- 移除：从列表删除记录，不动仓库本体。
+- 容错：repo 目录被移动 / 删除、磁盘卸载时，行内显示「不可达」状态而非报错弹窗。
 
-## Name
-Choose a self-explaining name for your project.
+## 性能策略
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+常驻应用的状态采集必须做明确约束：
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+- **分层频率**：本地状态默认 ~15s 一轮（可配置），远程 fetch 默认 ~10min 一轮（可配置 / 可关）。
+- **事件驱动补充**：监听工作区与 Git 元数据变化，处理 worktree 的 gitdir / commondir，并保留周期轮询兜底；只监听 `.git` 不能覆盖未提交文件修改。
+- **错峰与限流**：多 repo 检查在时间窗口内打散；本地检查并发上限初始为 2，远程按 commonDir 串行；单次调用带超时与取消。
+- **无上游 / detached HEAD / 非 git 目录**均视为正常状态展示，不产生异常路径。
+- 空闲时可整体暂停（可选：检测到全屏应用 / 系统睡眠恢复后重新对齐）。
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## 明确的非目标（当前版本不做）
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- 不执行 pull / push / commit / stash，不修改工作区内容、分支或 upstream；可选 fetch 仅按限定范围更新远程数据；
+- 不自动扫描磁盘发现仓库；
+- 不展示提交历史 / diff 详情（只是状态面板，不是 GUI 客户端）；
+- 不做多平台同步、账号登录、forge API 集成（issue / MR 列表等）。
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## UI 形态说明
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+采用标准 Windows 任务栏应用按钮，直接进入紧凑面板。2026-10-16 根据用户反馈，将主入口从通知区托盘调整到任务栏应用区：
+
+- **任务栏应用按钮**在运行时保持可见，点击启动或恢复面板；面板前台时再次点击按系统行为最小化。收起使用最小化，不隐藏窗口后让任务栏按钮消失；
+- 默认面板在任务栏附近展开，可通过标题栏收起。失焦自动收起需排除应用自身的设置窗口、文件选择器和菜单；
+- 面板可「保持展开」，失焦后继续显示。这与把应用快捷方式固定到任务栏是两个不同操作；
+- 用户可通过 Windows 的固定入口保留任务栏快捷方式。退出应用会停止检查，已固定的快捷方式仍可再次启动；
+- 设置、自启与退出放在应用内菜单。任务栏右键保留 Windows 管理的菜单，不伪装成任意可定制的托盘菜单；
+- 原型表达任务栏附近展开的目标。跨屏、缩放、自动隐藏任务栏及精确图标锚定仍需桌面技术验证，不使用 Explorer 注入或旧 DeskBand 作为默认实现。
+
+当前行为见[交互设计](doc/交互设计.md)，原型与验证历史见[设计工作区](devSchedule/技术选型与Penpot原型/doc/里程碑-技术选型与Penpot原型.md)。
+
+## 技术选型
+
+采用 **C# / WPF / .NET 10 / Git CLI**，按 MVVM 分层，JSON 保存仓库、分组与设置。Git 调用放在接口后的 Infrastructure 层；本轮不接入 libgit2。正式依据见[技术设计](doc/技术设计.md)，候选比较保留在[选型记录](devSchedule/技术选型与Penpot原型/doc/概述.md)。性能与发布包体积按实际测量记录。
+
+## 模块划分（规划）
+
+```
+┌ UI 层 ──────────────────────────────────────────┐
+│ 任务栏入口 │ 展开主面板(仓库列表) │ 设置窗 │ 添加向导 │
+└───────────────────┬─────────────────────────────┘
+                    │ 事件 / IPC
+┌ 应用核心 ──────────┴─────────────────────────────┐
+│ RepoRegistry   跟踪列表 CRUD + 持久化             │
+│ SourceResolver 来源识别（规则匹配 → icon）        │
+│ StatusEngine   状态采集与调度                     │
+│   ├ LocalChecker   本地状态（便宜、高频/事件触发）  │
+│   ├ RemoteFetcher  git fetch 策略（昂贵、低频错峰）│
+│   └ Scheduler      定时器 + FS 监听 + 并发上限     │
+│ ActionService  打开文件夹 / 移除跟踪              │
+│ ConfigStore    设置与已知来源配置                 │
+└───────────────────┬─────────────────────────────┘
+                    │
+          Git 访问层（CLI，接口隔离）
+```
+
+核心数据模型：
+
+- `Repo`：id、工作树 / Git 元数据路径、别名、可空 groupId、添加时间；remote URL 仅临时读取，来源按规则动态计算；
+- `RepoGroup`：稳定 id、名称、创建顺序、折叠状态；未分组用 groupId 为空表达，不依赖可编辑的名称作外键；
+- `Source`：id、名称、host 匹配规则、icon；
+- `RepoStatus`：分支、脏标记、ahead、behind、上次本地检查时间、上次 fetch 时间、错误态；
+- `Settings`：本地/远程轮询间隔、并发上限、开机自启、已知来源列表。
+
+## 配置与持久化
+
+- 跟踪列表、分组归属、折叠状态与设置持久化到用户目录（JSON 起步，规模上来再考虑 SQLite）；旧配置没有 groupId 时归入未分组，删除分组与归属回退作为一次原子保存；
+- 配置项：本地轮询间隔、远程 fetch 间隔与开关、并发上限、已知来源列表、自启、面板保持展开状态。
 
 ## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+- [x] v0.1：任务栏应用按钮 + 展开/收起面板 + 手动添加/移除 + 手动分组及配置恢复 + 本地状态（脏 / ahead / behind）+ 打开文件夹（本机开发闭环，验收边界见里程碑）
+- [x] v0.2：来源识别与矢量图标、自定义已知来源配置（内置类型，许可见 THIRD-PARTY-NOTICES.md）
+- [ ] v0.3：远程 fetch 层（错峰、离线容忍）、事件驱动刷新、性能调优（采集已接入，性能调优留待 M6）
+- [ ] v0.4：面板保持展开模式、登录自启、安装包（设置、主题缩放和自启适配已实现；安装交付留待 M6）
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+具体任务、依赖与完成条件统一在[桌面应用开发里程碑](devSchedule/桌面应用开发/doc/里程碑-桌面应用开发.md)跟踪。
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## 开发状态
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+M1–M5 已完成本机范围验收，共 162 项测试通过。已支持真实仓库与手动分组、本地持续检查、来源矢量图标、可选受控远程检查、间隔和并发设置、深浅主题、100% / 125% / 150% 应用缩放，以及持久化保持展开和登录启动适配。20 仓库长列表、键盘操作、失败恢复和新进程恢复已回归。自启测试使用隔离存储，未改本机启动项；真实登录、物理高 DPI、Windows 11 与成功远端 fetch 等未覆盖边界见[M5 验收记录](devSchedule/桌面应用开发/doc/M5验收记录.md)。构建和测试见[开发与运行](doc/开发与运行.md)，下一阶段为 M6 性能、打包与交付，进度只在[开发里程碑](devSchedule/桌面应用开发/doc/里程碑-桌面应用开发.md)维护。

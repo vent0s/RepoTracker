@@ -1,0 +1,4 @@
+interface:
+  display_name: "Doc Review"
+  short_description: "审阅项目非日志文档维护建议"
+  default_prompt: "Use $doc-review 扫描当前项目，并审阅 doc 中非日志文档的更新、合并、新建或删除建议。"

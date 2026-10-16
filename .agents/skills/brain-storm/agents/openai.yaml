@@ -1,0 +1,4 @@
+interface:
+  display_name: "Brain Storm"
+  short_description: "分层拆解复杂问题，并生成可检索的脑洞方案文档"
+  default_prompt: "Use $brain-storm 为一个复杂问题创建分层脑洞文档。"

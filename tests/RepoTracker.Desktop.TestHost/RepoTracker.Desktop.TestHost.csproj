@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <StartupObject>RepoTracker.Desktop.TestHost.Program</StartupObject>
+    <ApplicationManifest>../../src/RepoTracker.Desktop/app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/RepoTracker.Desktop/RepoTracker.Desktop.csproj" />
+    <Compile Include="../Shared/TestWorkspace.cs" Link="Shared/TestWorkspace.cs" />
+  </ItemGroup>
+</Project>
