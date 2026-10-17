@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using Microsoft.Win32;
 using RepoTracker.Core.Tracking;
 
@@ -32,20 +33,20 @@ public sealed class StartupRegistration(IStartupValueStore store, string executa
         var expected = Command(executable, profile);
         var previous = store.Read(name);
         if (!enabled && previous is not null && previous != expected)
-            throw new TrackerException("启动项来自其他程序位置，未删除；请在 Windows 启动设置中检查。");
+            throw new TrackerException(Text.Get("Startup.Foreign"));
         store.Write(name, enabled ? expected : null);
-        if (store.Read(name) != (enabled ? expected : null)) throw new TrackerException("Windows 启动项未保存，请检查当前用户权限。");
+        if (store.Read(name) != (enabled ? expected : null)) throw new TrackerException(Text.Get("Startup.NotSaved"));
     }
     public static string Command(string executable, string profile)
     {
         if (!Path.IsPathFullyQualified(executable) || !Path.IsPathFullyQualified(profile) || !executable.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
             executable.Any(c => c == '"' || char.IsControl(c)) || profile.Any(c => c == '"' || char.IsControl(c)))
-            throw new TrackerException("当前程序位置无法注册登录启动。");
+            throw new TrackerException(Text.Get("Startup.InvalidPath"));
         var normalized = Path.TrimEndingDirectorySeparator(Path.GetFullPath(profile));
         // A root directory retains its final backslash; escape it before the closing Windows command-line quote.
         if (normalized.EndsWith('\\')) normalized += "\\";
         var command = $"\"{executable}\" --profile \"{normalized}\" --minimized";
-        if (command.Length > 260) throw new TrackerException("程序与配置目录路径过长，无法注册登录启动；请使用较短的安装位置。");
+        if (command.Length > 260) throw new TrackerException(Text.Get("Startup.PathTooLong"));
         return command;
     }
 }

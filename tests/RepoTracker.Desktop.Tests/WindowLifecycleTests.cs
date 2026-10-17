@@ -3,6 +3,7 @@ using Xunit.Abstractions;
 
 namespace RepoTracker.Desktop.Tests;
 
+[Collection("Desktop")]
 public sealed class WindowLifecycleTests(ITestOutputHelper output)
 {
     [Fact]

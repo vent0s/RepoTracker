@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using System.Collections.Immutable;
 using System.Threading.Channels;
 using RepoTracker.Core.Tracking;
@@ -6,7 +7,7 @@ namespace RepoTracker.Core.Status;
 
 public enum RemoteOutcome { Never, Success, Skipped, Authentication, Offline, Timeout, Failed }
 public sealed record RemoteResult(RemoteOutcome Outcome, string Message);
-public sealed record RemoteSnapshot(RemoteOutcome Outcome = RemoteOutcome.Never, string Message = "尚未远程检查",
+public sealed record RemoteSnapshot(RemoteOutcome Outcome = RemoteOutcome.Never, string Message = "",
     DateTimeOffset? AttemptedAt = null, DateTimeOffset? SucceededAt = null, bool IsChecking = false);
 public interface IRemoteChecker
 {
@@ -136,7 +137,7 @@ public sealed class RemoteScheduler : IAsyncDisposable
                     RemoteResult? result = null;
                     try { result = await checker.CheckAsync(candidate.Repository, token).ConfigureAwait(false); }
                     catch (OperationCanceledException) when (token.IsCancellationRequested) { }
-                    catch (Exception) { result = new(RemoteOutcome.Failed, "远程检查失败，将在下一轮重试。"); }
+                    catch (Exception) { result = new(RemoteOutcome.Failed, Text.Get("Remote.RetryLater")); }
                     var success = false;
                     lock (sync)
                     {

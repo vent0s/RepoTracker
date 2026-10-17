@@ -35,6 +35,24 @@ public sealed class StartupRegistrationTests
     public void MalformedCommandsCannotReachStore(string exe, string profile)
     { Assert.Throws<TrackerException>(() => StartupRegistration.Command(exe, profile)); }
     [Fact]
+    public void PortableUpgradeAndRemovalKeepRegistrationScopedToCurrentExecutableAndProfile()
+    {
+        var values = new Store();
+        var oldLocation = new StartupRegistration(values, @"E:\old\RepoTracker.Desktop.exe", @"E:\profiles\personal");
+        var sameLocation = new StartupRegistration(values, @"E:\old\RepoTracker.Desktop.exe", @"E:\profiles\personal");
+        var newLocation = new StartupRegistration(values, @"E:\new\RepoTracker.Desktop.exe", @"E:\profiles\personal");
+        var otherProfile = new StartupRegistration(values, @"E:\old\RepoTracker.Desktop.exe", @"E:\profiles\work");
+        oldLocation.SetEnabled(true); otherProfile.SetEnabled(true);
+        Assert.True(sameLocation.IsEnabled); Assert.False(newLocation.IsEnabled);
+        newLocation.SetEnabled(true);
+        Assert.True(newLocation.IsEnabled); Assert.False(oldLocation.IsEnabled);
+        Assert.Throws<TrackerException>(() => oldLocation.SetEnabled(false));
+        Assert.True(newLocation.IsEnabled); Assert.True(otherProfile.IsEnabled);
+        newLocation.SetEnabled(false);
+        Assert.False(newLocation.IsEnabled); Assert.True(otherProfile.IsEnabled);
+        Assert.Single(values.Values);
+    }
+    [Fact]
     public void TooLongRunCommandIsRejectedBeforeWrite()
     {
         var values = new Store(); var registration = new StartupRegistration(values, @"E:\App.exe", "E:\\" + new string('a', 250));

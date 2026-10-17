@@ -1,3 +1,5 @@
+using RepoTracker.Core.Localization;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using RepoTracker.Desktop.Windows;
@@ -20,6 +22,7 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        var systemDisplayCulture = CultureInfo.CurrentUICulture;
         try
         {
             var options = StartupOptions.Parse(e.Args);
@@ -34,13 +37,17 @@ public partial class App : Application
                 var activated = await instance.ActivatePrimaryAsync(TimeSpan.FromSeconds(5));
                 log.Write(activated ? "secondary.activation.sent" : "secondary.activation.failed");
                 if (!activated)
-                    MessageBox.Show("RepoTracker 已在运行，但未能唤醒窗口。请从任务栏打开已有窗口，并确认两个进程的权限级别相同。",
+                    MessageBox.Show(Text.Get("App.AlreadyRunning"),
                         "RepoTracker", MessageBoxButton.OK, MessageBoxImage.Information);
                 Shutdown(activated ? 0 : 2);
                 return;
             }
 
             var registry = new RepositoryRegistry(new JsonConfigurationStore(profile), new GitRepositoryLocator(new GitProcess()), new FolderLauncher());
+            await registry.InitializeAsync();
+            var displayCulture = Text.SelectLanguage(registry.State.Preferences.Language, systemDisplayCulture);
+            CultureInfo.DefaultThreadCurrentUICulture = displayCulture;
+            CultureInfo.CurrentUICulture = displayCulture;
             scheduler = new LocalStatusScheduler(new GitStatusChecker(new GitProcess()), new RepositoryWatchFactory());
             remoteScheduler = new RemoteScheduler(new GitRemoteChecker(new GitProcess(timeout: TimeSpan.FromSeconds(60), remote: true),
                 new GitRemoteReader(new GitProcess())), scheduler.Refresh);
@@ -60,7 +67,7 @@ public partial class App : Application
         catch (Exception error) when (error is ArgumentException or IOException or UnauthorizedAccessException)
         {
             log?.Write("application.start.failed:" + error.GetType().Name);
-            MessageBox.Show("无法启动 RepoTracker。请检查启动参数和用户目录权限。", "RepoTracker",
+            MessageBox.Show(Text.Get("App.StartFailed"), "RepoTracker",
                 MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }

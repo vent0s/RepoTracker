@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Input;
@@ -19,48 +20,50 @@ public sealed class RepositoryRow(TrackedRepository repository) : ObservableObje
     public string SourceBadge => Source.Badge;
     public string SourceIconKey => Source.Marker is null ? Source.Icon.ToString() : "Unknown";
     public string SourceTooltip => Source.Name + "\n" + Source.Explanation;
-    public string RemoteText => !RemoteEnabled ? "远程已关闭" : Remote.IsChecking ? "远程检查中…" : Remote.Outcome switch
+    public string RemoteText => !RemoteEnabled ? Text.Get("Remote.Off") : Remote.IsChecking ? Text.Get("Remote.Checking") : Remote.Outcome switch
     {
-        RemoteOutcome.Never => "尚未远程检查", RemoteOutcome.Success => "远程 " + Remote.SucceededAt?.ToLocalTime().ToString("HH:mm:ss"),
-        RemoteOutcome.Skipped => "远程已跳过", RemoteOutcome.Authentication => "远程认证失败", RemoteOutcome.Offline => "远程离线",
-        RemoteOutcome.Timeout => "远程超时", _ => "远程检查失败"
+        RemoteOutcome.Never => Text.Get("Remote.Never"), RemoteOutcome.Success => Text.Get("Remote.TimePrefix") + Remote.SucceededAt?.ToLocalTime().ToString("HH:mm:ss"),
+        RemoteOutcome.Skipped => Text.Get("Remote.Skipped"), RemoteOutcome.Authentication => Text.Get("Remote.Authentication"), RemoteOutcome.Offline => Text.Get("Remote.Offline"),
+        RemoteOutcome.Timeout => Text.Get("Remote.Timeout"), _ => Text.Get("Remote.Failed")
     };
-    public string RemoteTooltip => RemoteText + "\n" + Remote.Message +
-        (Remote.SucceededAt is { } time ? "\n上次远程成功：" + time.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") : "\n本次运行尚未远程成功。") +
-        "\n来源 remote 与当前分支上游可能不同；↑↓ 始终根据本地已知上游计算。";
+    public string RemoteTooltip => RemoteText + "\n" + (string.IsNullOrEmpty(Remote.Message) ? Text.Get("Remote.Never") : Remote.Message) +
+        (Remote.SucceededAt is { } time ? Text.Get("Remote.LastSuccess") + time.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") : Text.Get("Remote.NoSuccess")) +
+        Text.Get("Remote.UpstreamHint");
     public Guid Id => Repository.Id;
     public string Name => Repository.DisplayName;
+    public string OpenFolderAccessibleName => Text.Format("Repository.OpenAccessible", Name);
+    public string ActionsAccessibleName => Text.Format("Repository.ActionsAccessible", Name);
     public string Path => Repository.WorktreeRoot;
     public string BranchText => Status.Data?.HeadKind switch
     {
-        HeadKind.Detached => "分离 HEAD", HeadKind.Unborn => Status.Data.Branch ?? "新仓库",
+        HeadKind.Detached => Text.Get("Status.Detached"), HeadKind.Unborn => Status.Data.Branch ?? Text.Get("Status.NewRepository"),
         HeadKind.Branch => Status.Data.Branch ?? "—", _ => "—"
     };
     public string BranchDetail => Status.Data?.HeadKind switch
     {
         HeadKind.Detached => Status.Data.Commit?[..Math.Min(7, Status.Data.Commit.Length)] ?? "",
-        HeadKind.Unborn => "未首次提交", _ => ""
+        HeadKind.Unborn => Text.Get("Status.Unborn"), _ => ""
     };
     public string StatusText => Status.Error != StatusError.None ? Status.Error switch
     {
-        StatusError.DirectoryUnavailable => "不可达", StatusError.NotRepository => "非仓库",
-        StatusError.GitUnavailable => "未找到 Git", StatusError.Timeout => "检查超时",
-        StatusError.AccessDenied => "无法访问", StatusError.InvalidOutput => "无法解析状态", _ => "检查失败"
-    } : Status.Data is not { } data ? Status.IsChecking ? "检查中…" : "待检查"
-        : data.Conflicts > 0 ? $"有冲突 · {data.Conflicts}" : data.IsDirty ? "有修改" : "干净";
-    public string ComparisonText => Status.Error != StatusError.None ? "稍后自动重试" : Status.Data is not { } data ? "尚未读取 Git 状态"
-        : data.HeadKind == HeadKind.Unborn ? "尚无提交" : data.Upstream is null ? "无上游"
-        : data.Ahead is null || data.Behind is null ? "上游计数未知"
-        : data.Ahead == 0 && data.Behind == 0 ? "与已知上游一致" : $"↑{data.Ahead}  ↓{data.Behind}";
+        StatusError.DirectoryUnavailable => Text.Get("Status.Unreachable"), StatusError.NotRepository => Text.Get("Status.NotRepository"),
+        StatusError.GitUnavailable => Text.Get("Status.GitMissing"), StatusError.Timeout => Text.Get("Status.Timeout"),
+        StatusError.AccessDenied => Text.Get("Status.AccessDenied"), StatusError.InvalidOutput => Text.Get("Status.ParseFailed"), _ => Text.Get("Status.Failed")
+    } : Status.Data is not { } data ? Status.IsChecking ? Text.Get("Status.Checking") : Text.Get("Status.Pending")
+        : data.Conflicts > 0 ? Text.Format("Status.Conflicts", data.Conflicts) : data.IsDirty ? Text.Get("Status.Dirty") : Text.Get("Status.Clean");
+    public string ComparisonText => Status.Error != StatusError.None ? Text.Get("Status.Retry") : Status.Data is not { } data ? Text.Get("Status.NotRead")
+        : data.HeadKind == HeadKind.Unborn ? Text.Get("Status.NoCommits") : data.Upstream is null ? Text.Get("Status.NoUpstream")
+        : data.Ahead is null || data.Behind is null ? Text.Get("Status.UnknownCounts")
+        : data.Ahead == 0 && data.Behind == 0 ? Text.Get("Status.InSync") : $"↑{data.Ahead}  ↓{data.Behind}";
     public string FreshnessText => Status.SucceededAt is { } time
-        ? (Status.Error == StatusError.None ? "本地 " : "上次成功 ") + time.ToLocalTime().ToString("HH:mm:ss") + (Status.IsChecking ? " · 检查中" : "")
-        : Status.CheckedAt is { } attempted ? "尝试 " + attempted.ToLocalTime().ToString("HH:mm:ss") : "";
+        ? (Status.Error == StatusError.None ? Text.Get("Status.LocalPrefix") : Text.Get("Status.LastSuccessPrefix")) + time.ToLocalTime().ToString("HH:mm:ss") + (Status.IsChecking ? Text.Get("Status.CheckingSuffix") : "")
+        : Status.CheckedAt is { } attempted ? Text.Get("Status.AttemptPrefix") + attempted.ToLocalTime().ToString("HH:mm:ss") : "";
     public string StatusTone => Status.Error != StatusError.None || Status.Data?.Conflicts > 0 ? "Error"
         : Status.Data is null ? "Muted" : Status.Data.IsDirty ? "Warning" : "Success";
     public string StatusTooltip => (Status.Message is { } message ? message + "\n" : "") +
-        (Status.Data is { } data ? $"{(Status.Error != StatusError.None ? "上次成功结果：" : "")}暂存 {data.Staged}，未暂存 {data.Unstaged}，未跟踪项 {data.Untracked}，冲突 {data.Conflicts}\n" +
-            $"分支：{BranchText} {BranchDetail}\n已知上游：{data.Upstream ?? "无"}\n" : "") +
-        FreshnessText + "\n" + RemoteTooltip + (Status.Watching ? "" : "\n文件监听不可用时由定时检查兜底。");
+        (Status.Data is { } data ? (Status.Error != StatusError.None ? Text.Get("Status.PreviousResult") : "") + Text.Format("Status.CountDetails", data.Staged, data.Unstaged, data.Untracked, data.Conflicts) +
+            Text.Format("Status.BranchDetails", BranchText, BranchDetail, data.Upstream ?? Text.Get("Status.None")) : "") +
+        FreshnessText + "\n" + RemoteTooltip + (Status.Watching ? "" : Text.Get("Status.WatchHint"));
 
     public void ApplyRemote(RemoteSnapshot remote, bool enabled, IEnumerable<SourceRule> rules)
     {
@@ -86,7 +89,7 @@ public sealed class ShellViewModel : ObservableObject
     private bool keepExpanded;
     private bool busy;
     private bool managingGroups;
-    private string notice = "正在加载仓库清单…";
+    private string notice = Text.Get("Repository.Loading");
     private IReadOnlyList<GroupRow> groups = [];
     private Guid? highlightedId;
     private readonly Dictionary<Guid, RepositoryRow> rows = [];
@@ -94,7 +97,7 @@ public sealed class ShellViewModel : ObservableObject
     private readonly RemoteScheduler remoteScheduler;
     public RepositoryRegistry Registry { get; }
     public bool KeepExpanded { get => keepExpanded; private set => Set(ref keepExpanded, value); }
-    public Task SetKeepExpandedAsync(bool value) => ExecuteAsync(() => Registry.UpdatePreferencesAsync(p => p with { KeepExpanded = value }), "保持展开设置已保存。");
+    public Task SetKeepExpandedAsync(bool value) => ExecuteAsync(() => Registry.UpdatePreferencesAsync(p => p with { KeepExpanded = value }), Text.Get("Window.KeepSaved"));
     public bool ManagingGroups { get => managingGroups; set => Set(ref managingGroups, value); }
     public string Notice { get => notice; set => Set(ref notice, value); }
     public bool IsBusy { get => busy; private set { Set(ref busy, value); Notify(nameof(CanEdit)); Notify(nameof(CanUndo)); CommandManager.InvalidateRequerySuggested(); } }
@@ -102,34 +105,36 @@ public sealed class ShellViewModel : ObservableObject
     public bool CanUndo => Registry.CanUndo && !IsBusy;
     public int RepositoryCount => Registry.State.Repositories.Length;
     public bool RemoteEnabled => Registry.State.RemoteEnabled;
-    public string RemoteSummary => RemoteEnabled ? $"远程已开启 · 每 {Registry.State.Preferences.RemoteIntervalMinutes} 分钟" : "远程检查已关闭";
+    public string RemoteSummary => RemoteEnabled ? Text.Format("Remote.EnabledSummary", Registry.State.Preferences.RemoteIntervalMinutes) : Text.Get("Remote.DisabledSummary");
     public string LocalCheckSummary
     {
         get
         {
             var latest = rows.Values.Select(row => row.Status.CheckedAt).Max();
             var checking = rows.Values.Count(row => row.Status.IsChecking);
-            return $"{RepositoryCount} 个仓库 · " + (checking > 0 ? $"正在检查 {checking} 个" : latest is { } time ? "本地 " + time.ToLocalTime().ToString("HH:mm:ss") : "等待本地检查");
+            return Text.Format("Status.RepositoryCount", RepositoryCount) + (checking > 0 ? Text.Format("Status.CheckingCount", checking) : latest is { } time ? Text.Get("Status.LocalPrefix") + time.ToLocalTime().ToString("HH:mm:ss") : Text.Get("Status.Waiting"));
         }
     }
     public IReadOnlyList<GroupRow> Groups { get => groups; private set => Set(ref groups, value); }
     public IReadOnlyList<GroupChoice> GroupChoices => Registry.State.Groups.Select(group => new GroupChoice(group.Id, group.Name))
-        .Append(new(null, GroupNames.Ungrouped)).ToArray();
+        .Append(new(null, Text.Get("Group.Ungrouped"))).ToArray();
 
     public ShellViewModel(RepositoryRegistry registry, LocalStatusScheduler scheduler, RemoteScheduler remoteScheduler)
     {
         Registry = registry;
         this.scheduler = scheduler;
         this.remoteScheduler = remoteScheduler;
-        Registry.Changed += (_, _) =>
-        {
-            var preferences = Registry.State.Preferences;
-            scheduler.SetSchedule(TimeSpan.FromSeconds(preferences.LocalIntervalSeconds), preferences.LocalConcurrency);
-            remoteScheduler.SetInterval(TimeSpan.FromMinutes(preferences.RemoteIntervalMinutes));
-            scheduler.SetRepositories(Registry.State.Repositories); remoteScheduler.Configure(Registry.State.Repositories, Registry.State.RemoteEnabled);
-            KeepExpanded = preferences.KeepExpanded;
-            Refresh();
-        };
+        Registry.Changed += (_, _) => ApplyRegistryState();
+    }
+
+    private void ApplyRegistryState()
+    {
+        var preferences = Registry.State.Preferences;
+        scheduler.SetSchedule(TimeSpan.FromSeconds(preferences.LocalIntervalSeconds), preferences.LocalConcurrency);
+        remoteScheduler.SetInterval(TimeSpan.FromMinutes(preferences.RemoteIntervalMinutes));
+        scheduler.SetRepositories(Registry.State.Repositories); remoteScheduler.Configure(Registry.State.Repositories, Registry.State.RemoteEnabled);
+        KeepExpanded = preferences.KeepExpanded;
+        Refresh();
     }
 
     public async Task InitializeAsync()
@@ -138,7 +143,8 @@ public sealed class ShellViewModel : ObservableObject
         try
         {
             await Registry.InitializeAsync();
-            Notice = Registry.Notice ?? $"仓库与分组自动保存 · 每 {Registry.State.Preferences.LocalIntervalSeconds} 秒检查本地状态";
+            ApplyRegistryState();
+            Notice = Registry.Notice ?? Text.Format("Status.AutoSave", Registry.State.Preferences.LocalIntervalSeconds);
         }
         finally { IsBusy = false; }
     }
@@ -156,7 +162,7 @@ public sealed class ShellViewModel : ObservableObject
         }
         Groups = state.Groups.Select(group => new GroupRow(group.Id, group.Name, !group.Collapsed,
                 state.Repositories.Where(repo => repo.GroupId == group.Id).Select(repo => rows[repo.Id]).ToArray()))
-            .Append(new(null, GroupNames.Ungrouped, !state.UngroupedCollapsed,
+            .Append(new(null, Text.Get("Group.Ungrouped"), !state.UngroupedCollapsed,
                 state.Repositories.Where(repo => repo.GroupId is null).Select(repo => rows[repo.Id]).ToArray())).ToArray();
         RefreshStatuses();
         Notify(nameof(RepositoryCount)); Notify(nameof(GroupChoices)); Notify(nameof(CanEdit)); Notify(nameof(CanUndo));
@@ -188,5 +194,5 @@ public sealed class ShellViewModel : ObservableObject
 
     public static bool IsUserFacing(Exception error) => error is TrackerException or IOException or UnauthorizedAccessException or Win32Exception or ArgumentException;
     public static string Message(Exception error) => error is TrackerException ? error.Message
-        : "操作未完成，原列表仍保留。请检查目录权限、磁盘空间或文件占用后重试。";
+        : Text.Get("Action.Failed");
 }

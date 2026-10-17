@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using System.Windows;
 using System.Collections.Immutable;
 using System.Windows.Controls;
@@ -24,16 +25,22 @@ public partial class SettingsWindow : Window
             LocalInterval.Text = preferences.LocalIntervalSeconds.ToString(); RemoteInterval.Text = preferences.RemoteIntervalMinutes.ToString();
             LocalConcurrency.Text = preferences.LocalConcurrency.ToString(); ThemeChoice.SelectedIndex = (int)preferences.Theme;
             ScaleChoice.SelectedIndex = Array.IndexOf(new[] { 100, 125, 150 }, preferences.ScalePercent);
+            LanguageChoice.SelectedIndex = Array.IndexOf(new[] { Text.SystemLanguage, "zh-Hans", "en" }, preferences.Language);
             ReadStartup();
         };
         Closing += (_, e) => { if (saving) e.Cancel = true; };
     }
     private void ReloadRules() => RuleList.ItemsSource = Model.Registry.State.Sources;
     private void Finish(object sender, RoutedEventArgs e) => Close();
+    private async void SaveLanguage(object sender, RoutedEventArgs e)
+    {
+        var language = LanguageChoice.SelectedIndex switch { 0 => Text.SystemLanguage, 1 => "zh-Hans", 2 => "en", _ => "" };
+        await SaveAsync(() => Model.Registry.UpdatePreferencesAsync(p => p with { Language = language }), Text.Get("Language.Saved"));
+    }
     private void NewRule(object sender, RoutedEventArgs e)
     {
         RuleList.SelectedItem = null; draftId = Guid.NewGuid(); SourceName.Text = ""; SourcePattern.Text = "";
-        SourceIcon.SelectedItem = Core.Sources.SourceIcon.Server; Feedback.Text = "填写来源名称和主机名，再保存。";
+        SourceIcon.SelectedItem = Core.Sources.SourceIcon.Server; Feedback.Text = Text.Get("Source.NewHint");
     }
     private void SelectRule(object sender, SelectionChangedEventArgs e)
     {
@@ -53,21 +60,21 @@ public partial class SettingsWindow : Window
     private async void SavePreferences(object sender, RoutedEventArgs e) => await SaveAsync(async () =>
     {
         if (!int.TryParse(LocalInterval.Text, out var local) || !int.TryParse(RemoteInterval.Text, out var remote) || !int.TryParse(LocalConcurrency.Text, out var concurrency))
-            throw new TrackerException("检查间隔与并发数请填写整数。");
+            throw new TrackerException(Text.Get("Settings.Integers"));
         var theme = (AppTheme)ThemeChoice.SelectedIndex;
         var scale = ScaleChoice.SelectedIndex switch { 0 => 100, 1 => 125, 2 => 150, _ => 0 };
         await Model.Registry.UpdatePreferencesAsync(p => p with { LocalIntervalSeconds = local, RemoteIntervalMinutes = remote, LocalConcurrency = concurrency, Theme = theme, ScalePercent = scale });
-    }, "检查频率、主题与缩放已保存并生效。");
+    }, Text.Get("Settings.Saved"));
     private async void ToggleKeep(object sender, RoutedEventArgs e)
     {
         var enabled = KeepSwitch.IsChecked == true;
-        await SaveAsync(() => Model.Registry.UpdatePreferencesAsync(p => p with { KeepExpanded = enabled }), "保持展开设置已保存。");
+        await SaveAsync(() => Model.Registry.UpdatePreferencesAsync(p => p with { KeepExpanded = enabled }), Text.Get("Window.KeepSaved"));
     }
     private void ReadStartup()
     {
         try { StartupSwitch.IsChecked = ((MainWindow)Owner).StartupRegistration.IsEnabled; }
         catch (Exception error) when (ShellViewModel.IsUserFacing(error) || error is System.Security.SecurityException)
-        { StartupSwitch.IsEnabled = false; Feedback.Text = error is TrackerException ? error.Message : "无法读取 Windows 启动设置，请检查当前用户权限。"; }
+        { StartupSwitch.IsEnabled = false; Feedback.Text = error is TrackerException ? error.Message : Text.Get("Startup.ReadFailed"); }
     }
     private async void ToggleStartup(object sender, RoutedEventArgs e)
     {
@@ -75,26 +82,26 @@ public partial class SettingsWindow : Window
         await SaveAsync(() =>
         {
             try { ((MainWindow)Owner).StartupRegistration.SetEnabled(enabled); }
-            catch (System.Security.SecurityException) { throw new TrackerException("Windows 未允许修改启动项，请检查当前用户权限。"); }
+            catch (System.Security.SecurityException) { throw new TrackerException(Text.Get("Startup.WriteDenied")); }
             return Task.CompletedTask;
-        }, enabled ? "已启用登录启动，登录后收起到任务栏。" : "已关闭登录启动。");
+        }, enabled ? Text.Get("Startup.Enabled") : Text.Get("Startup.Disabled"));
         ReadStartup();
     }
     private async void ToggleRemote(object sender, RoutedEventArgs e)
     {
         var enabled = RemoteSwitch.IsChecked == true;
-        await SaveAsync(() => Model.Registry.SetRemoteEnabledAsync(enabled), enabled ? "已开启远程检查，正在排队。" : "已关闭远程检查，正在取消未完成任务；本地检查继续。");
+        await SaveAsync(() => Model.Registry.SetRemoteEnabledAsync(enabled), enabled ? Text.Get("Remote.Enabled") : Text.Get("Remote.Disabled"));
     }
     private void RefreshRemote(object sender, RoutedEventArgs e)
-    { ((MainWindow)Owner).RemoteScheduler.Refresh(); Feedback.Text = "远程检查已排队；结果显示在仓库行与提示中。"; }
+    { ((MainWindow)Owner).RemoteScheduler.Refresh(); Feedback.Text = Text.Get("Remote.Queued"); }
     private async void SaveRule(object sender, RoutedEventArgs e)
     {
-        await SaveAsync(async () => { var draft = Draft(); await Model.Registry.SaveSourceAsync(draft); ReloadRules(); RuleList.SelectedItem = draft; }, "来源规则已保存，列表显示已更新。");
+        await SaveAsync(async () => { var draft = Draft(); await Model.Registry.SaveSourceAsync(draft); ReloadRules(); RuleList.SelectedItem = draft; }, Text.Get("Source.Saved"));
     }
     private async void DeleteRule(object sender, RoutedEventArgs e)
     {
-        if (RuleList.SelectedItem is not SourceRule rule) { Feedback.Text = "请先选择要删除的规则。"; return; }
-        await SaveAsync(async () => { await Model.Registry.DeleteSourceAsync(rule.Id); ReloadRules(); NewRule(sender, e); }, "规则已删除；未匹配的 remote 会显示为未知服务。");
+        if (RuleList.SelectedItem is not SourceRule rule) { Feedback.Text = Text.Get("Source.SelectFirst"); return; }
+        await SaveAsync(async () => { await Model.Registry.DeleteSourceAsync(rule.Id); ReloadRules(); NewRule(sender, e); }, Text.Get("Source.Deleted"));
     }
     private void PreviewRule(object sender, RoutedEventArgs e)
     {

@@ -34,10 +34,22 @@ internal static class Program
         if (args.Length == 2 && args[0] == "--profile")
             File.WriteAllText(Path.Combine(Directory.GetParent(args[1])!.FullName, "report.json"),
                 JsonSerializer.Serialize(new { Passed = false, Error = error.ToString() }));
+        if (Environment.GetEnvironmentVariable("REPOTRACKER_PERFORMANCE") is not null && args.Length >= 2 && args[0] == "--profile")
+            File.WriteAllText(Path.Combine(Directory.GetParent(args[1])!.FullName, "failure.txt"), error.ToString());
     }
 
     private static int Run(string[] args)
     {
+        if (args.Length == 4 && args[0] == "--package-probe")
+            // External UI Automation needs a background MTA thread, not this WPF STA entry point.
+            return Task.Run(() => PackageProbe.Run(args[1], args[2], args[3])).GetAwaiter().GetResult();
+        if (args.Length == 2 && args[0] == "--performance-writer")
+            return Performance.PerformanceFixture.WriteChangesAsync(args[1]).GetAwaiter().GetResult();
+        if (Environment.GetEnvironmentVariable("REPOTRACKER_PERFORMANCE") is { } performance)
+            return Performance.PerformanceRun.Start(Directory.GetParent(StartupOptions.ProfileDirectory(args))!.FullName, performance == "smoke");
+        // Existing scenario assertions use Chinese; language scenarios explicitly override the display culture.
+        System.Globalization.CultureInfo.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo(
+            Environment.GetEnvironmentVariable("REPOTRACKER_TEST_SYSTEM_LANGUAGE") ?? "zh-CN");
         if (args.Length == 2 && args[0] == "--foreign-window")
         {
             var app = new Application();
@@ -87,12 +99,19 @@ internal sealed partial class WindowProbe(App application, string outputDirector
 
     public async void Run()
     {
+        await WaitFor(() => application.MainWindow is MainWindow);
         var panel = (MainWindow)application.MainWindow;
         object? error = null;
         var exitCode = 0;
         try
         {
             await panel.Initialization;
+            if (Environment.GetEnvironmentVariable("REPOTRACKER_TEST_LANGUAGE") is not null)
+            {
+                await CheckLanguage(panel);
+                application.Shutdown();
+                return;
+            }
             if (Environment.GetEnvironmentVariable("REPOTRACKER_TEST_MINIMIZED") == "1")
             {
                 Require(panel.WindowState == WindowState.Minimized && panel.ShowInTaskbar && !panel.IsActive, "Login startup must remain minimized without activation.");
@@ -214,9 +233,15 @@ internal sealed partial class WindowProbe(App application, string outputDirector
             checks.Add("real native folder picker: owner, no premature collapse, cancellation");
 
             panel.RestorePanel();
+            // Native dialog teardown returns before all activation messages have drained.
+            // SetFocus models the user activating the panel before clicking its menu.
+            await panel.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+            await FocusOwnWindow(hwnd);
+            await WaitFor(() => NativeWindows.GetForegroundWindow() == hwnd && panel.IsActive);
             Invoke(panel, "More");
             await Task.Delay(200);
-            Require(panel.IsAutoCollapseSuspended && panel.WindowState == WindowState.Normal, "Menu did not protect focus.");
+            Require(panel.IsAutoCollapseSuspended && panel.WindowState == WindowState.Normal,
+                $"Menu did not protect focus: window={panel.WindowState}, active={panel.IsActive}, foreground={NativeWindows.GetForegroundWindow()}, panel={hwnd}, menu={((Button)FindById(panel, "More")!).ContextMenu.IsOpen}.");
             var menu = ((Button)FindById(panel, "More")!).ContextMenu;
             menu.IsOpen = false;
             for (var retry = 0; retry < 20 && panel.IsAutoCollapseSuspended; retry++) await Task.Delay(50);

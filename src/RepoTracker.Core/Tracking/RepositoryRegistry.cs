@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using System.Collections.Immutable;
 using RepoTracker.Core.Sources;
 
@@ -103,9 +104,9 @@ public sealed class RepositoryRegistry(IConfigurationStore store, IRepositoryLoc
     public Task UndoRemoveAsync(CancellationToken cancellationToken = default) =>
         ChangeAsync(state =>
         {
-            var repo = removed ?? throw new TrackerException("没有可撤销的移除操作。");
+            var repo = removed ?? throw new TrackerException(Text.Get("Repository.NoUndo"));
             if (state.Repositories.Any(item => SamePath(item.WorktreeRoot, repo.WorktreeRoot)))
-                throw new TrackerException("这个仓库已重新添加，无需恢复。");
+                throw new TrackerException(Text.Get("Repository.AlreadyRestored"));
             if (repo.GroupId is not null && !state.Groups.Any(group => group.Id == repo.GroupId)) repo = repo with { GroupId = null };
             return state with { Repositories = state.Repositories.Add(repo) };
         }, cancellationToken, beforePublish: _ => removed = null);
@@ -149,14 +150,14 @@ public sealed class RepositoryRegistry(IConfigurationStore store, IRepositoryLoc
 
     private void EnsureWritable()
     {
-        if (!initialized) throw new TrackerException("配置仍在加载，请稍后重试。");
-        if (!CanWrite) throw new TrackerException(Notice ?? "当前配置不可写，原文件已保留。");
+        if (!initialized) throw new TrackerException(Text.Get("Config.Loading"));
+        if (!CanWrite) throw new TrackerException(Notice ?? Text.Get("Config.ReadOnly"));
     }
 
     private static RepositoryGroup FindGroup(TrackerState state, Guid? id) => id is null
-        ? throw new TrackerException("“未分组”不能改名或删除。")
-        : state.Groups.FirstOrDefault(group => group.Id == id) ?? throw new TrackerException("分组已不存在，请重新选择。");
+        ? throw new TrackerException(Text.Get("Group.SystemProtected"))
+        : state.Groups.FirstOrDefault(group => group.Id == id) ?? throw new TrackerException(Text.Get("Group.Missing"));
     private static TrackedRepository FindRepository(TrackerState state, Guid id) =>
-        state.Repositories.FirstOrDefault(repo => repo.Id == id) ?? throw new TrackerException("仓库已不在跟踪列表中。");
+        state.Repositories.FirstOrDefault(repo => repo.Id == id) ?? throw new TrackerException(Text.Get("Repository.Missing"));
     private static bool SamePath(string first, string second) => string.Equals(first, second, StringComparison.OrdinalIgnoreCase);
 }

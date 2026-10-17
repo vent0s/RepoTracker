@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -11,7 +12,7 @@ public sealed record SourceRule(Guid Id, string Name, string Pattern, SourceIcon
 public sealed record RemoteIdentity(bool HasRemote, string? Host = null, string? RemoteName = null, bool ReadFailed = false);
 public sealed record SourceMatch(string Name, SourceIcon Icon, string Explanation, string? Marker = null)
 {
-    public string Badge => Marker ?? (Icon switch { SourceIcon.GitHub => "GH", SourceIcon.GitLab => "GL", SourceIcon.Server => "自建", _ => "Git" });
+    public string Badge => Marker ?? (Icon switch { SourceIcon.GitHub => "GH", SourceIcon.GitLab => "GL", SourceIcon.Server => Text.Get("Source.Server"), _ => "Git" });
 }
 
 public static partial class SourceRules
@@ -45,31 +46,31 @@ public static partial class SourceRules
 
     public static SourceRule Validate(SourceRule rule, IEnumerable<SourceRule> existing)
     {
-        if (rule.Id == Guid.Empty || rule.Name is null || rule.Pattern is null || !Enum.IsDefined(rule.Icon)) throw new TrackerException("来源规则无效。");
+        if (rule.Id == Guid.Empty || rule.Name is null || rule.Pattern is null || !Enum.IsDefined(rule.Icon)) throw new TrackerException(Text.Get("Source.Invalid"));
         var name = rule.Name.Trim();
-        if (name.Length is < 1 or > 30 || name.Any(char.IsControl)) throw new TrackerException("来源名称需要 1–30 个字符，不能包含控制字符。");
+        if (name.Length is < 1 or > 30 || name.Any(char.IsControl)) throw new TrackerException(Text.Get("Source.NameLength"));
         var pattern = rule.Pattern.Trim();
         var wildcard = pattern.StartsWith("*.", StringComparison.Ordinal);
         var host = NormalizeHost(wildcard ? pattern[2..] : pattern);
         if (host is null || (wildcard && (Uri.CheckHostName(host) != UriHostNameType.Dns || !host.Contains('.'))))
-            throw new TrackerException("请输入主机名或 *.example.com；不要填写协议、端口或路径。");
+            throw new TrackerException(Text.Get("Source.InvalidHost"));
         pattern = (wildcard ? "*." : "") + host;
         if (existing.Any(item => item.Id != rule.Id && string.Equals(item.Pattern, pattern, StringComparison.OrdinalIgnoreCase)))
-            throw new TrackerException("已有相同主机规则，请编辑原规则。");
+            throw new TrackerException(Text.Get("Source.Duplicate"));
         return rule with { Name = name, Pattern = pattern };
     }
 
     public static SourceMatch Match(RemoteIdentity? identity, IEnumerable<SourceRule> rules)
     {
-        if (identity is null || identity.ReadFailed) return new("来源待检查", SourceIcon.Git, "尚未成功读取 remote 配置。", "…");
-        if (!identity.HasRemote) return new("本地仓库", SourceIcon.Git, "没有配置 remote。");
-        if (identity.Host is not { } host) return new("未知服务", SourceIcon.Git, "remote 使用本地路径或不支持的 URL 格式。", "?");
+        if (identity is null || identity.ReadFailed) return new(Text.Get("Source.Pending"), SourceIcon.Git, Text.Get("Source.NotRead"), "…");
+        if (!identity.HasRemote) return new(Text.Get("Source.Local"), SourceIcon.Git, Text.Get("Remote.None"));
+        if (identity.Host is not { } host) return new(Text.Get("Source.Unknown"), SourceIcon.Git, Text.Get("Source.Unsupported"), "?");
         var rule = rules.Where(rule => rule.Pattern == host || rule.Pattern.StartsWith("*.", StringComparison.Ordinal) &&
                 host.EndsWith(rule.Pattern[1..], StringComparison.Ordinal) && host.Length > rule.Pattern.Length - 1)
             .OrderBy(rule => rule.Pattern.StartsWith("*.", StringComparison.Ordinal))
             .ThenByDescending(rule => rule.Pattern.Length).ThenBy(rule => rule.Id).FirstOrDefault();
-        return rule is null ? new("未知服务", SourceIcon.Git, $"{host} · 未命中规则", "?")
-            : new(rule.Name, rule.Icon, $"{host} → {rule.Pattern} · 精确优先，其次最长域名后缀");
+        return rule is null ? new(Text.Get("Source.Unknown"), SourceIcon.Git, Text.Format("Source.NoMatch", host), "?")
+            : new(rule.Name, rule.Icon, Text.Format("Source.Match", host, rule.Pattern));
     }
 
     [GeneratedRegex(@"^(?:[^@/\s:]+@)?(\[[^\]]+\]|[^/:\s]+):[^\s]+$", RegexOptions.CultureInvariant)]

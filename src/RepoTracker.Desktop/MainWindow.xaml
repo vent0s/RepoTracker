@@ -1,6 +1,7 @@
 <Window x:Class="RepoTracker.Desktop.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l10n="clr-namespace:RepoTracker.Desktop.Localization"
         xmlns:vm="clr-namespace:RepoTracker.Desktop.ViewModels"
         Title="RepoTracker" Width="760" Height="760" ResizeMode="CanMinimize" Style="{StaticResource {x:Type Window}}"
         ShowInTaskbar="True" Icon="{StaticResource AppIcon}" WindowStartupLocation="Manual"
@@ -45,10 +46,10 @@
             <TextBlock Text="{Binding RemoteText}" ToolTip="{Binding RemoteTooltip}" FontSize="10" Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis" />
           </StackPanel>
           <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
-            <Button Style="{StaticResource IconButton}" Width="32" Click="OpenRepositoryFolder" ToolTip="打开目录" AutomationProperties.Name="{Binding Name, StringFormat=打开目录：{0}}" AutomationProperties.AutomationId="OpenRepository">
+            <Button Style="{StaticResource IconButton}" Width="32" Click="OpenRepositoryFolder" ToolTip="{l10n:Text Repository.Open}" AutomationProperties.Name="{Binding OpenFolderAccessibleName}" AutomationProperties.AutomationId="OpenRepository">
               <Path Data="M 1,4 L 1,2 L 7,2 L 9,4 L 17,4 L 17,14 L 1,14 Z M 1,6 L 17,6" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2" Width="18" Height="16" />
             </Button>
-            <Button Content="&#xE712;" Style="{StaticResource IconButton}" Width="32" Click="RepositoryMenu" ToolTip="移动分组 / 移除跟踪" AutomationProperties.Name="{Binding Name, StringFormat=仓库操作：{0}}" AutomationProperties.AutomationId="RepositoryActions" />
+            <Button Content="&#xE712;" Style="{StaticResource IconButton}" Width="32" Click="RepositoryMenu" ToolTip="{l10n:Text Repository.ActionsHint}" AutomationProperties.Name="{Binding ActionsAccessibleName}" AutomationProperties.AutomationId="RepositoryActions" />
           </StackPanel>
         </Grid>
       </Border>
@@ -62,14 +63,14 @@
             <TextBlock Text="{Binding Repositories.Count}" Foreground="{DynamicResource DimBrush}" Margin="10,0,0,0" VerticalAlignment="Center" />
             <StackPanel Orientation="Horizontal" Margin="14,0,0,0" IsEnabled="{Binding CanManage}"
                         Visibility="{Binding Model.ManagingGroups, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolVisibility}}">
-              <Button Content="改名" Padding="8,4" Click="RenameGroup" AutomationProperties.AutomationId="RenameGroup" />
-              <Button Content="删除" Padding="8,4" Click="DeleteGroup" AutomationProperties.AutomationId="DeleteGroup" />
+              <Button Content="{l10n:Text Action.Rename}" Padding="8,4" Click="RenameGroup" AutomationProperties.AutomationId="RenameGroup" />
+              <Button Content="{l10n:Text Action.Delete}" Padding="8,4" Click="DeleteGroup" AutomationProperties.AutomationId="DeleteGroup" />
             </StackPanel>
           </StackPanel>
         </Expander.Header>
         <StackPanel>
           <ItemsControl ItemsSource="{Binding Repositories}" />
-          <TextBlock Text="此分组暂无仓库" Margin="32,14" Foreground="{DynamicResource DimBrush}" FontSize="12">
+          <TextBlock Text="{l10n:Text Group.Empty}" Margin="32,14" Foreground="{DynamicResource DimBrush}" FontSize="12">
             <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers>
               <DataTrigger Binding="{Binding Repositories.Count}" Value="0"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
             </Style.Triggers></Style></TextBlock.Style>
@@ -86,52 +87,52 @@
           <Image Source="{StaticResource AppIcon}" Width="34" Height="34" Margin="0,0,12,0" />
           <StackPanel>
             <TextBlock Text="RepoTracker" FontSize="21" FontWeight="SemiBold" />
-            <TextBlock Text="仓库状态，一眼看清" Foreground="{DynamicResource DimBrush}" FontSize="11" Margin="0,3,0,0" />
+            <TextBlock Text="{l10n:Text App.Tagline}" Foreground="{DynamicResource DimBrush}" FontSize="11" Margin="0,3,0,0" />
           </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" WindowChrome.IsHitTestVisibleInChrome="True">
-          <Button Content="&#xE72C;" Style="{StaticResource IconButton}" Command="{Binding RefreshCommand, RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="刷新本地状态（不连接远程）" AutomationProperties.Name="刷新本地状态" AutomationProperties.AutomationId="RefreshLocal" />
-          <Button x:Name="KeepButton" Content="&#xE718;" Command="{Binding ToggleKeepCommand, RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="保持展开（Ctrl+Shift+P），自动保存" AutomationProperties.AutomationId="KeepExpanded" AutomationProperties.Name="保持展开">
+          <Button Content="&#xE72C;" Style="{StaticResource IconButton}" Command="{Binding RefreshCommand, RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{l10n:Text Status.RefreshHint}" AutomationProperties.Name="{l10n:Text Status.Refresh}" AutomationProperties.AutomationId="RefreshLocal" />
+          <Button x:Name="KeepButton" Content="&#xE718;" Command="{Binding ToggleKeepCommand, RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{l10n:Text Window.KeepHint}" AutomationProperties.AutomationId="KeepExpanded" AutomationProperties.Name="{l10n:Text Window.Keep}">
             <Button.Style><Style TargetType="Button" BasedOn="{StaticResource IconButton}"><Style.Triggers><DataTrigger Binding="{Binding KeepExpanded}" Value="True"><Setter Property="Background" Value="{DynamicResource SelectedBrush}" /><Setter Property="Foreground" Value="{DynamicResource AccentBrush}" /></DataTrigger></Style.Triggers></Style></Button.Style>
           </Button>
-          <Button Content="&#xE713;" Style="{StaticResource IconButton}" Command="{Binding SettingsCommand, RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="窗口设置（Ctrl+,）" AutomationProperties.Name="窗口设置" AutomationProperties.AutomationId="Settings" />
-          <Button x:Name="MenuButton" Content="&#xE712;" Style="{StaticResource IconButton}" Click="OpenMenu" ToolTip="更多" AutomationProperties.Name="更多" AutomationProperties.AutomationId="More">
+          <Button Content="&#xE713;" Style="{StaticResource IconButton}" Command="{Binding SettingsCommand, RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{l10n:Text Settings.Hint}" AutomationProperties.Name="{l10n:Text Settings.Window}" AutomationProperties.AutomationId="Settings" />
+          <Button x:Name="MenuButton" Content="&#xE712;" Style="{StaticResource IconButton}" Click="OpenMenu" ToolTip="{l10n:Text Action.More}" AutomationProperties.Name="{l10n:Text Action.More}" AutomationProperties.AutomationId="More">
             <Button.ContextMenu>
               <ContextMenu x:Name="AppMenu" Opened="MenuOpened" Closed="MenuClosed">
-                <MenuItem Header="窗口设置" Click="OpenSettingsFromMenu" InputGestureText="Ctrl+," />
+                <MenuItem Header="{l10n:Text Settings.Window}" Click="OpenSettingsFromMenu" InputGestureText="Ctrl+," />
                 <Separator />
-                <MenuItem Header="收起到任务栏" Click="CollapseFromMenu" InputGestureText="Esc" />
-                <MenuItem Header="退出 RepoTracker" Click="ExitFromMenu" InputGestureText="Alt+F4" />
+                <MenuItem Header="{l10n:Text Window.Collapse}" Click="CollapseFromMenu" InputGestureText="Esc" />
+                <MenuItem Header="{l10n:Text App.Exit}" Click="ExitFromMenu" InputGestureText="Alt+F4" />
               </ContextMenu>
             </Button.ContextMenu>
           </Button>
-          <Button Content="&#xE921;" Style="{StaticResource IconButton}" Command="{Binding CollapseCommand, RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="收起到任务栏（Esc）" AutomationProperties.Name="收起到任务栏" AutomationProperties.AutomationId="Collapse" />
+          <Button Content="&#xE921;" Style="{StaticResource IconButton}" Command="{Binding CollapseCommand, RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{l10n:Text Window.CollapseHint}" AutomationProperties.Name="{l10n:Text Window.Collapse}" AutomationProperties.AutomationId="Collapse" />
         </StackPanel>
       </Grid>
       <Border Grid.Row="1" Background="{DynamicResource NoticeBrush}" Padding="22,0">
-        <DockPanel><Button DockPanel.Dock="Right" Content="撤销移除" Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=Window}}" Visibility="{Binding CanUndo, Converter={StaticResource BoolVisibility}}" AutomationProperties.AutomationId="UndoRemove" /><TextBlock Text="{Binding Notice}" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip="{Binding Notice}" /></DockPanel>
+        <DockPanel><Button DockPanel.Dock="Right" Content="{l10n:Text Repository.Undo}" Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=Window}}" Visibility="{Binding CanUndo, Converter={StaticResource BoolVisibility}}" AutomationProperties.AutomationId="UndoRemove" /><TextBlock Text="{Binding Notice}" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip="{Binding Notice}" /></DockPanel>
       </Border>
       <Grid Grid.Row="2" Margin="22,0">
-        <TextBlock Text="仓库分组" FontWeight="SemiBold" VerticalAlignment="Center" />
+        <TextBlock Text="{l10n:Text Group.Heading}" FontWeight="SemiBold" VerticalAlignment="Center" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-          <Button Content="＋ 新建分组" Command="{Binding NewGroupCommand, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.AutomationId="NewGroup" />
+          <Button Content="{l10n:Text Group.NewButton}" Command="{Binding NewGroupCommand, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.AutomationId="NewGroup" />
           <Button Command="{Binding ManageGroupsCommand, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.AutomationId="ManageGroups">
-            <Button.Style><Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Content" Value="管理分组" /><Style.Triggers><DataTrigger Binding="{Binding ManagingGroups}" Value="True"><Setter Property="Content" Value="完成管理" /><Setter Property="Background" Value="{DynamicResource SelectedBrush}" /></DataTrigger></Style.Triggers></Style></Button.Style>
+            <Button.Style><Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Content" Value="{l10n:Text Group.Manage}" /><Style.Triggers><DataTrigger Binding="{Binding ManagingGroups}" Value="True"><Setter Property="Content" Value="{l10n:Text Group.FinishManaging}" /><Setter Property="Background" Value="{DynamicResource SelectedBrush}" /></DataTrigger></Style.Triggers></Style></Button.Style>
           </Button>
         </StackPanel>
       </Grid>
       <Grid Grid.Row="3" Margin="22,0" Background="{DynamicResource SurfaceBrush}">
         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="90" /><ColumnDefinition Width="212" /></Grid.ColumnDefinitions>
-        <TextBlock Text="仓库 / 路径" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource DimBrush}" FontSize="11" />
-        <TextBlock Grid.Column="1" Text="分支" VerticalAlignment="Center" Foreground="{DynamicResource DimBrush}" FontSize="11" />
-        <TextBlock Grid.Column="2" Text="工作区 / 已知上游" VerticalAlignment="Center" Foreground="{DynamicResource DimBrush}" FontSize="11" />
+        <TextBlock Text="{l10n:Text Repository.PathColumn}" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource DimBrush}" FontSize="11" />
+        <TextBlock Grid.Column="1" Text="{l10n:Text Status.Branch}" VerticalAlignment="Center" Foreground="{DynamicResource DimBrush}" FontSize="11" />
+        <TextBlock Grid.Column="2" Text="{l10n:Text Status.WorktreeColumn}" VerticalAlignment="Center" Foreground="{DynamicResource DimBrush}" FontSize="11" />
       </Grid>
-      <ScrollViewer x:Name="RepositoryScroll" Grid.Row="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="12,4,0,0" AutomationProperties.Name="仓库列表" KeyboardNavigation.TabNavigation="Continue">
+      <ScrollViewer x:Name="RepositoryScroll" Grid.Row="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="12,4,0,0" AutomationProperties.Name="{l10n:Text Repository.List}" KeyboardNavigation.TabNavigation="Continue">
         <ItemsControl ItemsSource="{Binding Groups}" MinWidth="560" Width="{Binding ViewportWidth, ElementName=RepositoryScroll}" />
       </ScrollViewer>
       <Border Grid.Row="5" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="22,0">
         <Grid>
-          <Button Content="＋ 添加仓库" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{DynamicResource SelectedBrush}" Foreground="{DynamicResource AccentBrush}" Command="{Binding ChooseFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="添加 Git 工作树并选择分组（Ctrl+O）" AutomationProperties.Name="添加仓库" AutomationProperties.AutomationId="ChooseFolder" />
+          <Button Content="{l10n:Text Repository.AddButton}" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{DynamicResource SelectedBrush}" Foreground="{DynamicResource AccentBrush}" Command="{Binding ChooseFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{l10n:Text Repository.AddHint}" AutomationProperties.Name="{l10n:Text Repository.Add}" AutomationProperties.AutomationId="ChooseFolder" />
           <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
             <TextBlock Text="{Binding RemoteSummary}" Foreground="{DynamicResource MutedBrush}" FontSize="11" HorizontalAlignment="Right" />
             <TextBlock Text="{Binding LocalCheckSummary}" Foreground="{DynamicResource DimBrush}" FontSize="10" Margin="0,5,0,0" />

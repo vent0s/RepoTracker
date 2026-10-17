@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
@@ -32,10 +33,10 @@ public static class GroupNames
     {
         var normalized = name.Trim().Normalize(NormalizationForm.FormC);
         var length = new StringInfo(normalized).LengthInTextElements;
-        if (length is < 1 or > 30) throw new TrackerException("分组名称需要 1–30 个字符。");
-        if (normalized.Any(char.IsControl)) throw new TrackerException("分组名称不能包含换行或控制字符。");
+        if (length is < 1 or > 30) throw new TrackerException(Text.Get("Group.NameLength"));
+        if (normalized.Any(char.IsControl)) throw new TrackerException(Text.Get("Group.ControlCharacters"));
         if (string.Equals(normalized, Ungrouped, StringComparison.OrdinalIgnoreCase))
-            throw new TrackerException("“未分组”是系统分组，请使用其他名称。");
+            throw new TrackerException(Text.Get("Group.Reserved"));
         return normalized;
     }
 
@@ -43,7 +44,7 @@ public static class GroupNames
     {
         var normalized = Normalize(name);
         if (groups.Any(group => group.Id != exceptId && string.Equals(group.Name, normalized, StringComparison.OrdinalIgnoreCase)))
-            throw new TrackerException("已有同名分组，请换一个名称。");
+            throw new TrackerException(Text.Get("Group.Duplicate"));
         return normalized;
     }
 }

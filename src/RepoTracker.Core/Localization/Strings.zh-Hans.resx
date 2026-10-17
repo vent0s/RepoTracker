@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Config.ReadFailed" xml:space="preserve"><value>无法读取配置，原文件已保留。请检查 profile 目录权限后重新启动。</value></data>
+  <data name="Config.NewerVersion" xml:space="preserve"><value>配置来自更新版本的 RepoTracker。请使用对应版本打开；当前不会覆盖文件。</value></data>
+  <data name="Config.BackupFailed" xml:space="preserve"><value>配置和备份均无法恢复；原文件及损坏副本已保留，当前禁止保存。</value></data>
+  <data name="Config.Recovered" xml:space="preserve"><value>配置损坏，已保留原文件副本并读回上一次有效备份；下次修改时保存恢复后的列表。</value></data>
+  <data name="Config.CannotRecover" xml:space="preserve"><value>配置无法恢复或无法备份，原文件未覆盖，当前禁止保存。</value></data>
+  <data name="Config.NotWritable" xml:space="preserve"><value>配置尚未加载或不可写，原文件未覆盖。</value></data>
+  <data name="Config.ExternalChange" xml:space="preserve"><value>配置已被其他程序修改。请重新启动后再操作，外部内容未覆盖。</value></data>
+  <data name="Config.TooLarge" xml:space="preserve"><value>配置过大，无法保存；原列表未改变。</value></data>
+  <data name="Folder.Unavailable" xml:space="preserve"><value>目录不存在或无法访问；跟踪记录仍保留，可以移组或解除跟踪。</value></data>
+  <data name="Repository.Restored" xml:space="preserve"><value>已恢复仓库跟踪。</value></data>
+  <data name="Repository.ChooseFolder" xml:space="preserve"><value>选择 Git 仓库目录</value></data>
+  <data name="Group.New" xml:space="preserve"><value>新建分组</value></data>
+  <data name="Group.Description" xml:space="preserve"><value>按用途组织仓库。名称需为 1–30 个字符，不能重复。</value></data>
+  <data name="Group.Name" xml:space="preserve"><value>分组名称</value></data>
+  <data name="Action.Create" xml:space="preserve"><value>创建</value></data>
+  <data name="Group.Created" xml:space="preserve"><value>已创建分组。</value></data>
+  <data name="Repository.Add" xml:space="preserve"><value>添加仓库</value></data>
+  <data name="Repository.AddDescription" xml:space="preserve"><value>选择仓库目录或其中的子目录。只记录工作树位置，不移动或修改仓库文件。</value></data>
+  <data name="Repository.Folder" xml:space="preserve"><value>仓库目录</value></data>
+  <data name="Action.Add" xml:space="preserve"><value>添加</value></data>
+  <data name="Repository.Duplicate" xml:space="preserve"><value>该工作树已在跟踪列表中，已定位到对应仓库。</value></data>
+  <data name="Repository.AddedFallback" xml:space="preserve"><value>仓库已添加；原分组已删除，已放入未分组。</value></data>
+  <data name="Repository.Added" xml:space="preserve"><value>仓库已添加，正在后台检查本地状态。</value></data>
+  <data name="Group.Rename" xml:space="preserve"><value>重命名分组</value></data>
+  <data name="Group.RenameDescription" xml:space="preserve"><value>改名会保留分组内的所有仓库和顺序。</value></data>
+  <data name="Action.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Group.Renamed" xml:space="preserve"><value>分组已改名。</value></data>
+  <data name="Group.Delete" xml:space="preserve"><value>删除分组</value></data>
+  <data name="Group.Deleted" xml:space="preserve"><value>分组已删除，成员已移回未分组。</value></data>
+  <data name="Group.ExpansionSaved" xml:space="preserve"><value>分组展开状态已保存。</value></data>
+  <data name="Repository.Opened" xml:space="preserve"><value>已打开仓库目录。</value></data>
+  <data name="Group.MoveTo" xml:space="preserve"><value>移动到分组</value></data>
+  <data name="Group.Moved" xml:space="preserve"><value>仓库分组已更新。</value></data>
+  <data name="Repository.RemoveMenu" xml:space="preserve"><value>移除跟踪…</value></data>
+  <data name="Repository.RemoveTitle" xml:space="preserve"><value>移除仓库跟踪</value></data>
+  <data name="Repository.Remove" xml:space="preserve"><value>移除跟踪</value></data>
+  <data name="Repository.Removed" xml:space="preserve"><value>已移除跟踪，可点击“撤销移除”恢复。</value></data>
+  <data name="App.AlreadyRunning" xml:space="preserve"><value>RepoTracker 已在运行，但未能唤醒窗口。请从任务栏打开已有窗口，并确认两个进程的权限级别相同。</value></data>
+  <data name="App.StartFailed" xml:space="preserve"><value>无法启动 RepoTracker。请检查启动参数和用户目录权限。</value></data>
+  <data name="Repository.Open" xml:space="preserve"><value>打开目录</value></data>
+  <data name="Repository.ActionsHint" xml:space="preserve"><value>移动分组 / 移除跟踪</value></data>
+  <data name="Action.Rename" xml:space="preserve"><value>改名</value></data>
+  <data name="Action.Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="Group.Empty" xml:space="preserve"><value>此分组暂无仓库</value></data>
+  <data name="App.Tagline" xml:space="preserve"><value>仓库状态，一眼看清</value></data>
+  <data name="Status.RefreshHint" xml:space="preserve"><value>刷新本地状态（不连接远程）</value></data>
+  <data name="Status.Refresh" xml:space="preserve"><value>刷新本地状态</value></data>
+  <data name="Window.KeepHint" xml:space="preserve"><value>保持展开（Ctrl+Shift+P），自动保存</value></data>
+  <data name="Window.Keep" xml:space="preserve"><value>保持展开</value></data>
+  <data name="Settings.Hint" xml:space="preserve"><value>窗口设置（Ctrl+,）</value></data>
+  <data name="Settings.Window" xml:space="preserve"><value>窗口设置</value></data>
+  <data name="Action.More" xml:space="preserve"><value>更多</value></data>
+  <data name="Window.Collapse" xml:space="preserve"><value>收起到任务栏</value></data>
+  <data name="App.Exit" xml:space="preserve"><value>退出 RepoTracker</value></data>
+  <data name="Window.CollapseHint" xml:space="preserve"><value>收起到任务栏（Esc）</value></data>
+  <data name="Repository.Undo" xml:space="preserve"><value>撤销移除</value></data>
+  <data name="Group.Heading" xml:space="preserve"><value>仓库分组</value></data>
+  <data name="Group.NewButton" xml:space="preserve"><value>＋ 新建分组</value></data>
+  <data name="Group.Manage" xml:space="preserve"><value>管理分组</value></data>
+  <data name="Group.FinishManaging" xml:space="preserve"><value>完成管理</value></data>
+  <data name="Repository.PathColumn" xml:space="preserve"><value>仓库 / 路径</value></data>
+  <data name="Status.Branch" xml:space="preserve"><value>分支</value></data>
+  <data name="Status.WorktreeColumn" xml:space="preserve"><value>工作区 / 已知上游</value></data>
+  <data name="Repository.List" xml:space="preserve"><value>仓库列表</value></data>
+  <data name="Repository.AddButton" xml:space="preserve"><value>＋ 添加仓库</value></data>
+  <data name="Repository.AddHint" xml:space="preserve"><value>添加 Git 工作树并选择分组（Ctrl+O）</value></data>
+  <data name="Action.Browse" xml:space="preserve"><value>浏览…</value></data>
+  <data name="Group.Assigned" xml:space="preserve"><value>所属分组</value></data>
+  <data name="Action.Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Source.NewHint" xml:space="preserve"><value>填写来源名称和主机名，再保存。</value></data>
+  <data name="Settings.Integers" xml:space="preserve"><value>检查间隔与并发数请填写整数。</value></data>
+  <data name="Settings.Saved" xml:space="preserve"><value>检查频率、主题与缩放已保存并生效。</value></data>
+  <data name="Window.KeepSaved" xml:space="preserve"><value>保持展开设置已保存。</value></data>
+  <data name="Startup.ReadFailed" xml:space="preserve"><value>无法读取 Windows 启动设置，请检查当前用户权限。</value></data>
+  <data name="Startup.WriteDenied" xml:space="preserve"><value>Windows 未允许修改启动项，请检查当前用户权限。</value></data>
+  <data name="Startup.Enabled" xml:space="preserve"><value>已启用登录启动，登录后收起到任务栏。</value></data>
+  <data name="Startup.Disabled" xml:space="preserve"><value>已关闭登录启动。</value></data>
+  <data name="Remote.Enabled" xml:space="preserve"><value>已开启远程检查，正在排队。</value></data>
+  <data name="Remote.Disabled" xml:space="preserve"><value>已关闭远程检查，正在取消未完成任务；本地检查继续。</value></data>
+  <data name="Remote.Queued" xml:space="preserve"><value>远程检查已排队；结果显示在仓库行与提示中。</value></data>
+  <data name="Source.Saved" xml:space="preserve"><value>来源规则已保存，列表显示已更新。</value></data>
+  <data name="Source.SelectFirst" xml:space="preserve"><value>请先选择要删除的规则。</value></data>
+  <data name="Source.Deleted" xml:space="preserve"><value>规则已删除；未匹配的 remote 会显示为未知服务。</value></data>
+  <data name="Settings.LocalRange" xml:space="preserve"><value>本地检查间隔应为 5–300 秒。</value></data>
+  <data name="Settings.RemoteRange" xml:space="preserve"><value>远程检查间隔应为 1–120 分钟。</value></data>
+  <data name="Settings.ConcurrencyRange" xml:space="preserve"><value>本地并发数应为 1–4。</value></data>
+  <data name="Settings.ThemeInvalid" xml:space="preserve"><value>请选择深色或浅色主题。</value></data>
+  <data name="Settings.ScaleInvalid" xml:space="preserve"><value>界面缩放支持 100%、125% 和 150%。</value></data>
+  <data name="Settings.Title" xml:space="preserve"><value>设置 · RepoTracker</value></data>
+  <data name="Settings.Heading" xml:space="preserve"><value>设置</value></data>
+  <data name="Settings.CheckTab" xml:space="preserve"><value>检查与窗口</value></data>
+  <data name="Settings.Frequency" xml:space="preserve"><value>检查频率</value></data>
+  <data name="Settings.LocalLabel" xml:space="preserve"><value>本地间隔（5–300 秒）</value></data>
+  <data name="Settings.LocalAccessible" xml:space="preserve"><value>本地检查间隔，秒</value></data>
+  <data name="Settings.RemoteLabel" xml:space="preserve"><value>远程间隔（1–120 分钟）</value></data>
+  <data name="Settings.RemoteAccessible" xml:space="preserve"><value>远程检查间隔，分钟</value></data>
+  <data name="Settings.ConcurrencyLabel" xml:space="preserve"><value>本地并发（1–4）</value></data>
+  <data name="Settings.ConcurrencyAccessible" xml:space="preserve"><value>本地检查并发数</value></data>
+  <data name="Settings.Appearance" xml:space="preserve"><value>外观</value></data>
+  <data name="Settings.Theme" xml:space="preserve"><value>主题</value></data>
+  <data name="Theme.Dark" xml:space="preserve"><value>深色</value></data>
+  <data name="Theme.Light" xml:space="preserve"><value>浅色</value></data>
+  <data name="Settings.Scale" xml:space="preserve"><value>界面缩放</value></data>
+  <data name="Settings.Save" xml:space="preserve"><value>保存检查与外观</value></data>
+  <data name="Settings.Immediate" xml:space="preserve"><value>保存后立即生效。文件变化会提前检查本地状态，正在执行的检查正常完成。</value></data>
+  <data name="Remote.Heading" xml:space="preserve"><value>远程检查</value></data>
+  <data name="Remote.Enable" xml:space="preserve"><value>开启远程检查</value></data>
+  <data name="Remote.Disclosure" xml:space="preserve"><value>开启后会连接远程，下载 Git 对象并更新远程跟踪引用。不会提交、推送或改变工作文件、当前分支和上游设置。</value></data>
+  <data name="Remote.Help" xml:space="preserve"><value>优先检查 origin，否则按名称选择第一个 remote。仅支持标准 HTTPS / SSH 与受控 fetch 映射；认证失败时不会弹出登录窗口。请先在应用外配置 Git Credential Manager 或 SSH。</value></data>
+  <data name="Remote.Refresh" xml:space="preserve"><value>立即检查远程</value></data>
+  <data name="Startup.Toggle" xml:space="preserve"><value>登录 Windows 时启动</value></data>
+  <data name="Startup.Help" xml:space="preserve"><value>自动保存。登录启动时收起到任务栏，点击任务栏图标展开。固定图标请使用 Windows 的应用菜单。</value></data>
+  <data name="Source.Tab" xml:space="preserve"><value>来源规则</value></data>
+  <data name="Source.PriorityHint" xml:space="preserve"><value>精确域名优先；通配规则取最长后缀。规则只影响显示。</value></data>
+  <data name="Action.New" xml:space="preserve"><value>新增</value></data>
+  <data name="Source.Delete" xml:space="preserve"><value>删除选中规则</value></data>
+  <data name="Source.Name" xml:space="preserve"><value>来源名称</value></data>
+  <data name="Source.HostLabel" xml:space="preserve"><value>主机名 / *.example.com</value></data>
+  <data name="Source.HostAccessible" xml:space="preserve"><value>来源主机名或通配规则</value></data>
+  <data name="Source.Icon" xml:space="preserve"><value>图标</value></data>
+  <data name="Source.IconAccessible" xml:space="preserve"><value>来源图标类型</value></data>
+  <data name="Source.Save" xml:space="preserve"><value>保存规则</value></data>
+  <data name="Source.PreviewHint" xml:space="preserve"><value>用 remote URL 预览（包含当前编辑草稿，不会连接网络）</value></data>
+  <data name="Action.Preview" xml:space="preserve"><value>预览</value></data>
+  <data name="Action.Done" xml:space="preserve"><value>完成</value></data>
+  <data name="Status.MissingFolder" xml:space="preserve"><value>目录不存在或无法访问，跟踪记录已保留。</value></data>
+  <data name="Status.GitDenied" xml:space="preserve"><value>Git 拒绝访问，请检查目录权限或可信目录设置。</value></data>
+  <data name="Status.NotWorktree" xml:space="preserve"><value>原 Git 工作树已失效，请核对目录；跟踪记录已保留。</value></data>
+  <data name="Status.GitFailed" xml:space="preserve"><value>Git 检查失败，请确认仓库完整且可以访问。</value></data>
+  <data name="Status.InvalidOutput" xml:space="preserve"><value>Git 输出不完整或格式不受支持，未显示为干净状态。</value></data>
+  <data name="Status.NoPermission" xml:space="preserve"><value>没有读取仓库的权限。</value></data>
+  <data name="Status.ReadFailed" xml:space="preserve"><value>读取仓库失败，请检查磁盘与目录。</value></data>
+  <data name="Remote.None" xml:space="preserve"><value>没有配置 remote。</value></data>
+  <data name="Remote.ReadFailed" xml:space="preserve"><value>无法读取 remote 配置。</value></data>
+  <data name="Remote.MultipleUrls" xml:space="preserve"><value>存在多个 remote URL，已跳过自动 fetch。</value></data>
+  <data name="Remote.InvalidName" xml:space="preserve"><value>remote 名称不受支持。</value></data>
+  <data name="Remote.Mirror" xml:space="preserve"><value>镜像 remote 不支持自动检查。</value></data>
+  <data name="Remote.UploadPack" xml:space="preserve"><value>自定义 upload-pack 不支持自动检查。</value></data>
+  <data name="Remote.Rewrite" xml:space="preserve"><value>URL 重写配置需要手动检查，已跳过 fetch。</value></data>
+  <data name="Remote.UrlUnsupported" xml:space="preserve"><value>仅支持不含密码或查询参数的 HTTPS / SSH remote；本地路径和其他协议已跳过。</value></data>
+  <data name="Remote.RefspecUnsupported" xml:space="preserve"><value>fetch 映射不受支持；仅接受单一 heads → 对应 remote-tracking 映射。</value></data>
+  <data name="Startup.Foreign" xml:space="preserve"><value>启动项来自其他程序位置，未删除；请在 Windows 启动设置中检查。</value></data>
+  <data name="Startup.NotSaved" xml:space="preserve"><value>Windows 启动项未保存，请检查当前用户权限。</value></data>
+  <data name="Startup.InvalidPath" xml:space="preserve"><value>当前程序位置无法注册登录启动。</value></data>
+  <data name="Startup.PathTooLong" xml:space="preserve"><value>程序与配置目录路径过长，无法注册登录启动；请使用较短的安装位置。</value></data>
+  <data name="Remote.Off" xml:space="preserve"><value>远程已关闭</value></data>
+  <data name="Remote.Checking" xml:space="preserve"><value>远程检查中…</value></data>
+  <data name="Remote.Never" xml:space="preserve"><value>尚未远程检查</value></data>
+  <data name="Remote.TimePrefix" xml:space="preserve"><value>远程 </value></data>
+  <data name="Remote.Skipped" xml:space="preserve"><value>远程已跳过</value></data>
+  <data name="Remote.Authentication" xml:space="preserve"><value>远程认证失败</value></data>
+  <data name="Remote.Offline" xml:space="preserve"><value>远程离线</value></data>
+  <data name="Remote.Timeout" xml:space="preserve"><value>远程超时</value></data>
+  <data name="Remote.Failed" xml:space="preserve"><value>远程检查失败</value></data>
+  <data name="Remote.LastSuccess" xml:space="preserve"><value>
+上次远程成功：</value></data>
+  <data name="Remote.NoSuccess" xml:space="preserve"><value>
+本次运行尚未远程成功。</value></data>
+  <data name="Remote.UpstreamHint" xml:space="preserve"><value>
+来源 remote 与当前分支上游可能不同；↑↓ 始终根据本地已知上游计算。</value></data>
+  <data name="Status.Detached" xml:space="preserve"><value>分离 HEAD</value></data>
+  <data name="Status.NewRepository" xml:space="preserve"><value>新仓库</value></data>
+  <data name="Status.Unborn" xml:space="preserve"><value>未首次提交</value></data>
+  <data name="Status.Unreachable" xml:space="preserve"><value>不可达</value></data>
+  <data name="Status.NotRepository" xml:space="preserve"><value>非仓库</value></data>
+  <data name="Status.GitMissing" xml:space="preserve"><value>未找到 Git</value></data>
+  <data name="Status.Timeout" xml:space="preserve"><value>检查超时</value></data>
+  <data name="Status.AccessDenied" xml:space="preserve"><value>无法访问</value></data>
+  <data name="Status.ParseFailed" xml:space="preserve"><value>无法解析状态</value></data>
+  <data name="Status.Failed" xml:space="preserve"><value>检查失败</value></data>
+  <data name="Status.Checking" xml:space="preserve"><value>检查中…</value></data>
+  <data name="Status.Pending" xml:space="preserve"><value>待检查</value></data>
+  <data name="Status.Dirty" xml:space="preserve"><value>有修改</value></data>
+  <data name="Status.Clean" xml:space="preserve"><value>干净</value></data>
+  <data name="Status.Retry" xml:space="preserve"><value>稍后自动重试</value></data>
+  <data name="Status.NotRead" xml:space="preserve"><value>尚未读取 Git 状态</value></data>
+  <data name="Status.NoCommits" xml:space="preserve"><value>尚无提交</value></data>
+  <data name="Status.NoUpstream" xml:space="preserve"><value>无上游</value></data>
+  <data name="Status.UnknownCounts" xml:space="preserve"><value>上游计数未知</value></data>
+  <data name="Status.InSync" xml:space="preserve"><value>与已知上游一致</value></data>
+  <data name="Status.LocalPrefix" xml:space="preserve"><value>本地 </value></data>
+  <data name="Status.LastSuccessPrefix" xml:space="preserve"><value>上次成功 </value></data>
+  <data name="Status.CheckingSuffix" xml:space="preserve"><value> · 检查中</value></data>
+  <data name="Status.AttemptPrefix" xml:space="preserve"><value>尝试 </value></data>
+  <data name="Status.PreviousResult" xml:space="preserve"><value>上次成功结果：</value></data>
+  <data name="Status.None" xml:space="preserve"><value>无</value></data>
+  <data name="Status.WatchHint" xml:space="preserve"><value>
+文件监听不可用时由定时检查兜底。</value></data>
+  <data name="Repository.Loading" xml:space="preserve"><value>正在加载仓库清单…</value></data>
+  <data name="Remote.DisabledSummary" xml:space="preserve"><value>远程检查已关闭</value></data>
+  <data name="Status.Waiting" xml:space="preserve"><value>等待本地检查</value></data>
+  <data name="Action.Failed" xml:space="preserve"><value>操作未完成，原列表仍保留。请检查目录权限、磁盘空间或文件占用后重试。</value></data>
+  <data name="Group.NameLength" xml:space="preserve"><value>分组名称需要 1–30 个字符。</value></data>
+  <data name="Group.ControlCharacters" xml:space="preserve"><value>分组名称不能包含换行或控制字符。</value></data>
+  <data name="Group.Reserved" xml:space="preserve"><value>“未分组”是系统分组，请使用其他名称。</value></data>
+  <data name="Group.Duplicate" xml:space="preserve"><value>已有同名分组，请换一个名称。</value></data>
+  <data name="Repository.AbsolutePath" xml:space="preserve"><value>请选择文件夹，或输入完整的绝对目录路径。</value></data>
+  <data name="Repository.InvalidPath" xml:space="preserve"><value>目录不存在或无法访问，请检查路径和权限。</value></data>
+  <data name="Repository.InvalidWorktree" xml:space="preserve"><value>无法识别 Git 工作树。请确认这是普通仓库或 worktree，并检查目录权限及 Git 的可信目录设置。</value></data>
+  <data name="Repository.InvalidGitPath" xml:space="preserve"><value>Git 返回了无法识别的目录信息，请确认 Git 版本支持 rev-parse --path-format。</value></data>
+  <data name="Repository.ResolveFailed" xml:space="preserve"><value>无法解析目录的实际位置。</value></data>
+  <data name="Remote.FolderUnavailable" xml:space="preserve"><value>目录不可达，未执行 fetch。</value></data>
+  <data name="Remote.SymbolicRefs" xml:space="preserve"><value>远程跟踪引用含不受支持的符号引用，已跳过 fetch。</value></data>
+  <data name="Remote.Success" xml:space="preserve"><value>远程检查成功；本地状态正在重新读取。</value></data>
+  <data name="Remote.AuthenticationHint" xml:space="preserve"><value>认证或 SSH 主机校验失败；请先在应用外完成凭据配置。</value></data>
+  <data name="Remote.OfflineHint" xml:space="preserve"><value>网络不可用或远端无法连接；保留上次成功信息。</value></data>
+  <data name="Remote.FailureHint" xml:space="preserve"><value>fetch 失败；请在应用外检查远端与仓库配置。</value></data>
+  <data name="Remote.TimeoutHint" xml:space="preserve"><value>远程检查超时，已终止 Git。</value></data>
+  <data name="Remote.GitUnavailable" xml:space="preserve"><value>Git 不可用，未完成远程检查。</value></data>
+  <data name="Remote.ConfigFailed" xml:space="preserve"><value>无法读取远程配置；本地检查继续运行。</value></data>
+  <data name="Source.Server" xml:space="preserve"><value>自建</value></data>
+  <data name="Source.Invalid" xml:space="preserve"><value>来源规则无效。</value></data>
+  <data name="Source.NameLength" xml:space="preserve"><value>来源名称需要 1–30 个字符，不能包含控制字符。</value></data>
+  <data name="Source.InvalidHost" xml:space="preserve"><value>请输入主机名或 *.example.com；不要填写协议、端口或路径。</value></data>
+  <data name="Source.Duplicate" xml:space="preserve"><value>已有相同主机规则，请编辑原规则。</value></data>
+  <data name="Source.Pending" xml:space="preserve"><value>来源待检查</value></data>
+  <data name="Source.NotRead" xml:space="preserve"><value>尚未成功读取 remote 配置。</value></data>
+  <data name="Source.Local" xml:space="preserve"><value>本地仓库</value></data>
+  <data name="Source.Unknown" xml:space="preserve"><value>未知服务</value></data>
+  <data name="Source.Unsupported" xml:space="preserve"><value>remote 使用本地路径或不支持的 URL 格式。</value></data>
+  <data name="Git.StartFailed" xml:space="preserve"><value>无法启动 Git。请确认已安装 Git for Windows，并可从 PATH 访问。</value></data>
+  <data name="Git.Timeout" xml:space="preserve"><value>Git 检查超时，请确认目录可以访问后重试。</value></data>
+  <data name="Git.ParseFailed" xml:space="preserve"><value>无法识别完整的 Git porcelain v2 状态输出。</value></data>
+  <data name="Status.RetryLater" xml:space="preserve"><value>本地检查未完成，将在下一轮重试。</value></data>
+  <data name="Repository.NoUndo" xml:space="preserve"><value>没有可撤销的移除操作。</value></data>
+  <data name="Repository.AlreadyRestored" xml:space="preserve"><value>这个仓库已重新添加，无需恢复。</value></data>
+  <data name="Config.Loading" xml:space="preserve"><value>配置仍在加载，请稍后重试。</value></data>
+  <data name="Config.ReadOnly" xml:space="preserve"><value>当前配置不可写，原文件已保留。</value></data>
+  <data name="Group.SystemProtected" xml:space="preserve"><value>“未分组”不能改名或删除。</value></data>
+  <data name="Group.Missing" xml:space="preserve"><value>分组已不存在，请重新选择。</value></data>
+  <data name="Repository.Missing" xml:space="preserve"><value>仓库已不在跟踪列表中。</value></data>
+  <data name="Remote.RetryLater" xml:space="preserve"><value>远程检查失败，将在下一轮重试。</value></data>
+  <data name="Group.Ungrouped" xml:space="preserve"><value>未分组</value></data>
+  <data name="Language.Label" xml:space="preserve"><value>界面语言</value></data>
+  <data name="Language.System" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="Language.RestartHint" xml:space="preserve"><value>默认跟随 Windows 显示语言。语言设置保存后，下次启动生效；未支持的语言使用 English。</value></data>
+  <data name="Language.Saved" xml:space="preserve"><value>语言设置已保存，下次启动生效。</value></data>
+  <data name="Language.Save" xml:space="preserve"><value>保存语言</value></data>
+  <data name="Language.Invalid" xml:space="preserve"><value>请选择跟随系统、简体中文或 English。</value></data>
+  <data name="Repository.OpenAccessible" xml:space="preserve"><value>打开目录：{0}</value></data>
+  <data name="Repository.ActionsAccessible" xml:space="preserve"><value>仓库操作：{0}</value></data>
+  <data name="Config.CorruptEmpty" xml:space="preserve"><value>配置损坏，已保留 {0}，当前使用空列表。</value></data>
+  <data name="Group.DeleteDescription" xml:space="preserve"><value>删除“{0}”后，{1} 个仓库会移回未分组并继续跟踪。不会删除仓库文件。</value></data>
+  <data name="Repository.RemoveDescription" xml:space="preserve"><value>仅从列表移除“{0}”，不会删除本地文件。移除后可撤销最近一次操作。</value></data>
+  <data name="Status.Conflicts" xml:space="preserve"><value>有冲突 · {0}</value></data>
+  <data name="Status.CountDetails" xml:space="preserve"><value>暂存 {0}，未暂存 {1}，未跟踪项 {2}，冲突 {3}
+</value></data>
+  <data name="Status.BranchDetails" xml:space="preserve"><value>分支：{0} {1}
+已知上游：{2}
+</value></data>
+  <data name="Remote.EnabledSummary" xml:space="preserve"><value>远程已开启 · 每 {0} 分钟</value></data>
+  <data name="Status.RepositoryCount" xml:space="preserve"><value>{0} 个仓库 · </value></data>
+  <data name="Status.CheckingCount" xml:space="preserve"><value>正在检查 {0} 个</value></data>
+  <data name="Status.AutoSave" xml:space="preserve"><value>仓库与分组自动保存 · 每 {0} 秒检查本地状态</value></data>
+  <data name="Source.NoMatch" xml:space="preserve"><value>{0} · 未命中规则</value></data>
+  <data name="Source.Match" xml:space="preserve"><value>{0} → {1} · 精确优先，其次最长域名后缀</value></data>
+</root>

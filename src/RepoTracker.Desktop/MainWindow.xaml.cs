@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -54,7 +55,7 @@ public partial class MainWindow : Window
         ChooseFolderCommand = new RelayCommand(ShowAddRepository, () => !collapse.IsSuspended && Model.CanEdit);
         NewGroupCommand = new RelayCommand(ShowNewGroup, () => !collapse.IsSuspended && Model.CanEdit);
         ManageGroupsCommand = new RelayCommand(() => Model.ManagingGroups = !Model.ManagingGroups, () => Model.CanEdit);
-        UndoCommand = new RelayCommand(async () => await Model.ExecuteAsync(() => registry.UndoRemoveAsync(lifetime.Token), "已恢复仓库跟踪。"), () => Model.CanUndo);
+        UndoCommand = new RelayCommand(async () => await Model.ExecuteAsync(() => registry.UndoRemoveAsync(lifetime.Token), Text.Get("Repository.Restored")), () => Model.CanUndo);
         CollapseCommand = new RelayCommand(() => WindowState = WindowState.Minimized, () => !collapse.IsSuspended);
         InitializeComponent();
         scheduler.Changed += StatusChanged;
@@ -104,6 +105,8 @@ public partial class MainWindow : Window
             log.Write("window.closed");
         };
         Initialization = Model.InitializeAsync();
+        ThemeManager.Apply(registry.State.Preferences);
+        System.Windows.Shell.WindowChrome.GetWindowChrome(this).CaptionHeight = 76 * registry.State.Preferences.ScalePercent / 100.0;
     }
 
     private nint WindowMessage(nint hwnd, int message, nint wParam, nint lParam, ref bool handled)
@@ -175,24 +178,24 @@ public partial class MainWindow : Window
     {
         using var suspension = collapse.Suspend();
         log.Write("folder-picker.opened");
-        var picker = new OpenFolderDialog { Title = "选择 Git 仓库目录", Multiselect = false };
+        var picker = new OpenFolderDialog { Title = Text.Get("Repository.ChooseFolder"), Multiselect = false };
         var accepted = picker.ShowDialog(owner ?? this) == true;
         log.Write("folder-picker.closed");
         return accepted ? picker.FolderName : null;
     }
 
-    public void ShowNewGroup() => ShowEntry(new("新建分组", "按用途组织仓库。名称需为 1–30 个字符，不能重复。", "分组名称", "", null, null,
-        "创建", async (name, _, token) => { await Model.Registry.CreateGroupAsync(name, token); Model.Notice = "已创建分组。"; }));
+    public void ShowNewGroup() => ShowEntry(new(Text.Get("Group.New"), Text.Get("Group.Description"), Text.Get("Group.Name"), "", null, null,
+        Text.Get("Action.Create"), async (name, _, token) => { await Model.Registry.CreateGroupAsync(name, token); Model.Notice = Text.Get("Group.Created"); }));
 
     public void ShowAddRepository()
     {
         AddRepositoryResult? added = null;
-        ShowEntry(new("添加仓库", "选择仓库目录或其中的子目录。只记录工作树位置，不移动或修改仓库文件。", "仓库目录", "",
-            Model.GroupChoices, null, "添加", async (path, groupId, token) =>
+        ShowEntry(new(Text.Get("Repository.Add"), Text.Get("Repository.AddDescription"), Text.Get("Repository.Folder"), "",
+            Model.GroupChoices, null, Text.Get("Action.Add"), async (path, groupId, token) =>
             {
                 added = await Model.Registry.AddAsync(path, groupId, token);
-                Model.Notice = added.AlreadyTracked ? "该工作树已在跟踪列表中，已定位到对应仓库。"
-                    : added.GroupFellBack ? "仓库已添加；原分组已删除，已放入未分组。" : "仓库已添加，正在后台检查本地状态。";
+                Model.Notice = added.AlreadyTracked ? Text.Get("Repository.Duplicate")
+                    : added.GroupFellBack ? Text.Get("Repository.AddedFallback") : Text.Get("Repository.Added");
             }, ChooseFolder));
         if (added is not null) _ = RevealRepositoryAsync(added.Repository);
     }
@@ -255,29 +258,29 @@ public partial class MainWindow : Window
     private void RenameGroup(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement { DataContext: GroupRow group } || !group.CanManage) return;
-        ShowEntry(new("重命名分组", "改名会保留分组内的所有仓库和顺序。", "分组名称", group.Name, null, null,
-            "保存", async (name, _, token) => { await Model.Registry.RenameGroupAsync(group.Id, name, token); Model.Notice = "分组已改名。"; }));
+        ShowEntry(new(Text.Get("Group.Rename"), Text.Get("Group.RenameDescription"), Text.Get("Group.Name"), group.Name, null, null,
+            Text.Get("Action.Save"), async (name, _, token) => { await Model.Registry.RenameGroupAsync(group.Id, name, token); Model.Notice = Text.Get("Group.Renamed"); }));
     }
 
     private void DeleteGroup(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement { DataContext: GroupRow group } || !group.CanManage) return;
-        ShowEntry(new("删除分组", $"删除“{group.Name}”后，{group.Repositories.Count} 个仓库会移回未分组并继续跟踪。不会删除仓库文件。",
-            null, "", null, null, "删除分组", async (_, _, token) =>
-            { await Model.Registry.DeleteGroupAsync(group.Id, token); Model.Notice = "分组已删除，成员已移回未分组。"; }));
+        ShowEntry(new(Text.Get("Group.Delete"), Text.Format("Group.DeleteDescription", group.Name, group.Repositories.Count),
+            null, "", null, null, Text.Get("Group.Delete"), async (_, _, token) =>
+            { await Model.Registry.DeleteGroupAsync(group.Id, token); Model.Notice = Text.Get("Group.Deleted"); }));
     }
 
     private async void GroupExpansionChanged(object sender, RoutedEventArgs e)
     {
         if (sender is not Expander { DataContext: GroupRow group } expander || !IsLoaded || group.IsExpanded == expander.IsExpanded) return;
         if (!Model.CanEdit) { expander.IsExpanded = group.IsExpanded; return; }
-        await Model.ExecuteAsync(() => Model.Registry.SetCollapsedAsync(group.Id, !expander.IsExpanded, lifetime.Token), "分组展开状态已保存。");
+        await Model.ExecuteAsync(() => Model.Registry.SetCollapsedAsync(group.Id, !expander.IsExpanded, lifetime.Token), Text.Get("Group.ExpansionSaved"));
     }
 
     private async void OpenRepositoryFolder(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement { DataContext: RepositoryRow row })
-            await Model.ExecuteAsync(() => { Model.Registry.OpenFolder(row.Id); return Task.CompletedTask; }, "已打开仓库目录。");
+            await Model.ExecuteAsync(() => { Model.Registry.OpenFolder(row.Id); return Task.CompletedTask; }, Text.Get("Repository.Opened"));
     }
 
     private void RepositoryMenu(object sender, RoutedEventArgs e)
@@ -286,19 +289,19 @@ public partial class MainWindow : Window
         var menu = new ContextMenu { PlacementTarget = button };
         menu.Opened += MenuOpened;
         menu.Closed += MenuClosed;
-        var move = new MenuItem { Header = "移动到分组", IsEnabled = Model.CanEdit };
+        var move = new MenuItem { Header = Text.Get("Group.MoveTo"), IsEnabled = Model.CanEdit };
         foreach (var group in Model.GroupChoices)
         {
             var item = new MenuItem { Header = group.Name, IsCheckable = true, IsChecked = row.Repository.GroupId == group.Id };
-            item.Click += async (_, _) => await Model.ExecuteAsync(() => Model.Registry.MoveAsync(row.Id, group.Id, lifetime.Token), "仓库分组已更新。");
+            item.Click += async (_, _) => await Model.ExecuteAsync(() => Model.Registry.MoveAsync(row.Id, group.Id, lifetime.Token), Text.Get("Group.Moved"));
             move.Items.Add(item);
         }
         menu.Items.Add(move);
         menu.Items.Add(new Separator());
-        var remove = new MenuItem { Header = "移除跟踪…", IsEnabled = Model.CanEdit };
-        remove.Click += (_, _) => Dispatcher.BeginInvoke(() => ShowEntry(new("移除仓库跟踪", $"仅从列表移除“{row.Name}”，不会删除本地文件。移除后可撤销最近一次操作。",
-            null, "", null, null, "移除跟踪", async (_, _, token) =>
-            { await Model.Registry.RemoveAsync(row.Id, token); Model.Notice = "已移除跟踪，可点击“撤销移除”恢复。"; })));
+        var remove = new MenuItem { Header = Text.Get("Repository.RemoveMenu"), IsEnabled = Model.CanEdit };
+        remove.Click += (_, _) => Dispatcher.BeginInvoke(() => ShowEntry(new(Text.Get("Repository.RemoveTitle"), Text.Format("Repository.RemoveDescription", row.Name),
+            null, "", null, null, Text.Get("Repository.Remove"), async (_, _, token) =>
+            { await Model.Registry.RemoveAsync(row.Id, token); Model.Notice = Text.Get("Repository.Removed"); })));
         menu.Items.Add(remove);
         button.ContextMenu = menu;
         menu.IsOpen = true;

@@ -1,7 +1,8 @@
 <Window x:Class="RepoTracker.Desktop.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="设置 · RepoTracker" Width="660" Height="740" ResizeMode="NoResize" Style="{StaticResource {x:Type Window}}"
+        xmlns:l10n="clr-namespace:RepoTracker.Desktop.Localization"
+        Title="{l10n:Text Settings.Title}" Width="660" Height="740" ResizeMode="NoResize" Style="{StaticResource {x:Type Window}}"
         ShowInTaskbar="False" WindowStartupLocation="CenterOwner" AutomationProperties.AutomationId="WindowSettings">
   <Window.Resources>
     <Style TargetType="TabItem">
@@ -18,55 +19,62 @@
   </Window.Resources>
   <Grid Margin="24" LayoutTransform="{DynamicResource UiScaleTransform}" KeyboardNavigation.TabNavigation="Cycle">
     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-    <TextBlock Text="设置" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,18" />
+    <TextBlock Text="{l10n:Text Settings.Heading}" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,18" />
     <TabControl x:Name="Tabs" Grid.Row="1" Background="{DynamicResource PanelBrush}" BorderThickness="0" Padding="0,18,0,0" Foreground="{DynamicResource TextBrush}">
-      <TabItem Header="检查与窗口" AutomationProperties.AutomationId="CheckSettingsTab">
+      <TabItem Header="{l10n:Text Settings.CheckTab}" AutomationProperties.AutomationId="CheckSettingsTab">
         <ScrollViewer x:Name="CheckScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"><StackPanel Width="{Binding ViewportWidth, ElementName=CheckScroll}" MinWidth="500">
-          <TextBlock Text="检查频率" FontSize="17" FontWeight="SemiBold" />
+          <TextBlock Text="{l10n:Text Settings.Frequency}" FontSize="17" FontWeight="SemiBold" />
           <Grid Margin="0,12,0,14"><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
-            <StackPanel Margin="0,0,12,0"><TextBlock Text="本地间隔（5–300 秒）" Margin="0,0,0,6" /><TextBox x:Name="LocalInterval" AutomationProperties.AutomationId="LocalInterval" AutomationProperties.Name="本地检查间隔，秒" /></StackPanel>
-            <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="远程间隔（1–120 分钟）" Margin="0,0,0,6" /><TextBox x:Name="RemoteInterval" AutomationProperties.AutomationId="RemoteInterval" AutomationProperties.Name="远程检查间隔，分钟" /></StackPanel>
-            <StackPanel Grid.Column="2"><TextBlock Text="本地并发（1–4）" Margin="0,0,0,6" /><TextBox x:Name="LocalConcurrency" AutomationProperties.AutomationId="LocalConcurrency" AutomationProperties.Name="本地检查并发数" /></StackPanel>
+            <StackPanel Margin="0,0,12,0"><TextBlock Text="{l10n:Text Settings.LocalLabel}" Margin="0,0,0,6" /><TextBox x:Name="LocalInterval" AutomationProperties.AutomationId="LocalInterval" AutomationProperties.Name="{l10n:Text Settings.LocalAccessible}" /></StackPanel>
+            <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="{l10n:Text Settings.RemoteLabel}" Margin="0,0,0,6" /><TextBox x:Name="RemoteInterval" AutomationProperties.AutomationId="RemoteInterval" AutomationProperties.Name="{l10n:Text Settings.RemoteAccessible}" /></StackPanel>
+            <StackPanel Grid.Column="2"><TextBlock Text="{l10n:Text Settings.ConcurrencyLabel}" Margin="0,0,0,6" /><TextBox x:Name="LocalConcurrency" AutomationProperties.AutomationId="LocalConcurrency" AutomationProperties.Name="{l10n:Text Settings.ConcurrencyAccessible}" /></StackPanel>
           </Grid>
           <Grid><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="20" /><ColumnDefinition /></Grid.ColumnDefinitions>
-            <StackPanel><TextBlock Text="外观" Margin="0,0,0,6" /><ComboBox x:Name="ThemeChoice" SelectedIndex="0" AutomationProperties.AutomationId="ThemeChoice" AutomationProperties.Name="主题"><ComboBoxItem Content="深色" /><ComboBoxItem Content="浅色" /></ComboBox></StackPanel>
-            <StackPanel Grid.Column="2"><TextBlock Text="界面缩放" Margin="0,0,0,6" /><ComboBox x:Name="ScaleChoice" SelectedIndex="0" AutomationProperties.AutomationId="ScaleChoice" AutomationProperties.Name="界面缩放"><ComboBoxItem Content="100%" /><ComboBoxItem Content="125%" /><ComboBoxItem Content="150%" /></ComboBox></StackPanel>
+            <StackPanel><TextBlock Text="{l10n:Text Settings.Appearance}" Margin="0,0,0,6" /><ComboBox x:Name="ThemeChoice" SelectedIndex="0" AutomationProperties.AutomationId="ThemeChoice" AutomationProperties.Name="{l10n:Text Settings.Theme}"><ComboBoxItem Content="{l10n:Text Theme.Dark}" /><ComboBoxItem Content="{l10n:Text Theme.Light}" /></ComboBox></StackPanel>
+            <StackPanel Grid.Column="2"><TextBlock Text="{l10n:Text Settings.Scale}" Margin="0,0,0,6" /><ComboBox x:Name="ScaleChoice" SelectedIndex="0" AutomationProperties.AutomationId="ScaleChoice" AutomationProperties.Name="{l10n:Text Settings.Scale}"><ComboBoxItem Content="100%" /><ComboBoxItem Content="125%" /><ComboBoxItem Content="150%" /></ComboBox></StackPanel>
           </Grid>
-          <Button Content="保存检查与外观" Click="SavePreferences" HorizontalAlignment="Left" Margin="0,12,0,10" Background="{DynamicResource SelectedBrush}" Foreground="{DynamicResource AccentBrush}" AutomationProperties.AutomationId="SavePreferences" />
-          <TextBlock Text="保存后立即生效。文件变化会提前检查本地状态，正在执行的检查正常完成。" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}" />
+          <Button Content="{l10n:Text Settings.Save}" Click="SavePreferences" HorizontalAlignment="Left" Margin="0,12,0,10" Background="{DynamicResource SelectedBrush}" Foreground="{DynamicResource AccentBrush}" AutomationProperties.AutomationId="SavePreferences" />
+          <TextBlock Text="{l10n:Text Settings.Immediate}" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}" />
           <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,18" />
-          <TextBlock Text="远程检查" FontSize="17" FontWeight="SemiBold" />
-          <CheckBox x:Name="RemoteSwitch" Content="开启远程检查" Margin="0,12,0,12" IsChecked="{Binding RemoteEnabled, Mode=OneWay}" Click="ToggleRemote" AutomationProperties.AutomationId="RemoteEnabled" />
-          <TextBlock Text="开启后会连接远程，下载 Git 对象并更新远程跟踪引用。不会提交、推送或改变工作文件、当前分支和上游设置。" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}" LineHeight="23" />
-          <TextBlock Text="优先检查 origin，否则按名称选择第一个 remote。仅支持标准 HTTPS / SSH 与受控 fetch 映射；认证失败时不会弹出登录窗口。请先在应用外配置 Git Credential Manager 或 SSH。" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{DynamicResource DimBrush}" LineHeight="22" />
-          <Button Content="立即检查远程" Click="RefreshRemote" IsEnabled="{Binding RemoteEnabled}" HorizontalAlignment="Left" Margin="0,16,0,0" AutomationProperties.AutomationId="RefreshRemote" />
+          <TextBlock Text="{l10n:Text Language.Label}" FontSize="17" FontWeight="SemiBold" />
+          <ComboBox x:Name="LanguageChoice" Margin="0,12,0,10" AutomationProperties.AutomationId="LanguageChoice" AutomationProperties.Name="{l10n:Text Language.Label}">
+            <ComboBoxItem Content="{l10n:Text Language.System}" /><ComboBoxItem Content="简体中文" /><ComboBoxItem Content="English" />
+          </ComboBox>
+          <TextBlock Text="{l10n:Text Language.RestartHint}" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}" />
+          <Button Content="{l10n:Text Language.Save}" Click="SaveLanguage" HorizontalAlignment="Left" Margin="0,12,0,0" AutomationProperties.AutomationId="SaveLanguage" />
           <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,18" />
-          <CheckBox x:Name="KeepSwitch" Content="保持展开" IsChecked="{Binding KeepExpanded, Mode=OneWay}" Click="ToggleKeep" AutomationProperties.AutomationId="KeepSwitch" />
-          <CheckBox x:Name="StartupSwitch" Content="登录 Windows 时启动" Margin="0,12,0,0" Click="ToggleStartup" AutomationProperties.AutomationId="StartupSwitch" />
-          <TextBlock Text="自动保存。登录启动时收起到任务栏，点击任务栏图标展开。固定图标请使用 Windows 的应用菜单。" TextWrapping="Wrap" Foreground="{DynamicResource DimBrush}" FontSize="12" Margin="0,10,0,8" />
+          <TextBlock Text="{l10n:Text Remote.Heading}" FontSize="17" FontWeight="SemiBold" />
+          <CheckBox x:Name="RemoteSwitch" Content="{l10n:Text Remote.Enable}" Margin="0,12,0,12" IsChecked="{Binding RemoteEnabled, Mode=OneWay}" Click="ToggleRemote" AutomationProperties.AutomationId="RemoteEnabled" />
+          <TextBlock Text="{l10n:Text Remote.Disclosure}" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}" LineHeight="23" />
+          <TextBlock Text="{l10n:Text Remote.Help}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{DynamicResource DimBrush}" LineHeight="22" />
+          <Button Content="{l10n:Text Remote.Refresh}" Click="RefreshRemote" IsEnabled="{Binding RemoteEnabled}" HorizontalAlignment="Left" Margin="0,16,0,0" AutomationProperties.AutomationId="RefreshRemote" />
+          <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,18" />
+          <CheckBox x:Name="KeepSwitch" Content="{l10n:Text Window.Keep}" IsChecked="{Binding KeepExpanded, Mode=OneWay}" Click="ToggleKeep" AutomationProperties.AutomationId="KeepSwitch" />
+          <CheckBox x:Name="StartupSwitch" Content="{l10n:Text Startup.Toggle}" Margin="0,12,0,0" Click="ToggleStartup" AutomationProperties.AutomationId="StartupSwitch" />
+          <TextBlock Text="{l10n:Text Startup.Help}" TextWrapping="Wrap" Foreground="{DynamicResource DimBrush}" FontSize="12" Margin="0,10,0,8" />
         </StackPanel></ScrollViewer>
       </TabItem>
-      <TabItem Header="来源规则" AutomationProperties.AutomationId="SourcesTab">
+      <TabItem Header="{l10n:Text Source.Tab}" AutomationProperties.AutomationId="SourcesTab">
         <ScrollViewer x:Name="SourcesScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"><Grid MinWidth="550" Width="{Binding ViewportWidth, ElementName=SourcesScroll}">
           <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="140" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-          <TextBlock Text="精确域名优先；通配规则取最长后缀。规则只影响显示。" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,10" />
-          <ListBox x:Name="RuleList" Grid.Row="1" Background="{DynamicResource InputBrush}" BorderBrush="{DynamicResource BorderBrush}" SelectionChanged="SelectRule" AutomationProperties.AutomationId="SourceRules" AutomationProperties.Name="来源规则">
+          <TextBlock Text="{l10n:Text Source.PriorityHint}" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,10" />
+          <ListBox x:Name="RuleList" Grid.Row="1" Background="{DynamicResource InputBrush}" BorderBrush="{DynamicResource BorderBrush}" SelectionChanged="SelectRule" AutomationProperties.AutomationId="SourceRules" AutomationProperties.Name="{l10n:Text Source.Tab}">
             <ListBox.Template><ControlTemplate TargetType="ListBox"><Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1"><ScrollViewer Focusable="False"><ItemsPresenter /></ScrollViewer></Border></ControlTemplate></ListBox.Template>
             <ListBox.ItemTemplate><DataTemplate><StackPanel Orientation="Horizontal"><TextBlock Text="{Binding Name}" Width="130" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" /><TextBlock Text="{Binding Pattern}" MaxWidth="280" TextTrimming="CharacterEllipsis" ToolTip="{Binding Pattern}" Foreground="{DynamicResource MutedBrush}" /><TextBlock Text="{Binding Icon}" Margin="14,0,0,0" Foreground="{DynamicResource MutedBrush}" /></StackPanel></DataTemplate></ListBox.ItemTemplate>
           </ListBox>
-          <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,14"><Button Content="新增" Click="NewRule" AutomationProperties.AutomationId="NewSource" /><Button Content="删除选中规则" Click="DeleteRule" Margin="8,0,0,0" AutomationProperties.AutomationId="DeleteSource" /></StackPanel>
+          <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,14"><Button Content="{l10n:Text Action.New}" Click="NewRule" AutomationProperties.AutomationId="NewSource" /><Button Content="{l10n:Text Source.Delete}" Click="DeleteRule" Margin="8,0,0,0" AutomationProperties.AutomationId="DeleteSource" /></StackPanel>
           <Grid Grid.Row="3"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="100" /></Grid.ColumnDefinitions>
-            <StackPanel><TextBlock Text="来源名称" Margin="0,0,0,6" /><TextBox x:Name="SourceName" AutomationProperties.AutomationId="SourceName" AutomationProperties.Name="来源名称" /></StackPanel>
-            <StackPanel Grid.Column="2"><TextBlock Text="主机名 / *.example.com" Margin="0,0,0,6" /><TextBox x:Name="SourcePattern" AutomationProperties.AutomationId="SourcePattern" AutomationProperties.Name="来源主机名或通配规则" /></StackPanel>
-            <StackPanel Grid.Column="4"><TextBlock Text="图标" Margin="0,0,0,6" /><ComboBox x:Name="SourceIcon" AutomationProperties.AutomationId="SourceIcon" AutomationProperties.Name="来源图标类型" /></StackPanel>
+            <StackPanel><TextBlock Text="{l10n:Text Source.Name}" Margin="0,0,0,6" /><TextBox x:Name="SourceName" AutomationProperties.AutomationId="SourceName" AutomationProperties.Name="{l10n:Text Source.Name}" /></StackPanel>
+            <StackPanel Grid.Column="2"><TextBlock Text="{l10n:Text Source.HostLabel}" Margin="0,0,0,6" /><TextBox x:Name="SourcePattern" AutomationProperties.AutomationId="SourcePattern" AutomationProperties.Name="{l10n:Text Source.HostAccessible}" /></StackPanel>
+            <StackPanel Grid.Column="4"><TextBlock Text="{l10n:Text Source.Icon}" Margin="0,0,0,6" /><ComboBox x:Name="SourceIcon" AutomationProperties.AutomationId="SourceIcon" AutomationProperties.Name="{l10n:Text Source.IconAccessible}" /></StackPanel>
           </Grid>
-          <Button Grid.Row="4" Content="保存规则" Click="SaveRule" HorizontalAlignment="Left" Margin="0,14,0,16" Background="{DynamicResource SelectedBrush}" Foreground="{DynamicResource AccentBrush}" AutomationProperties.AutomationId="SaveSource" />
-          <StackPanel Grid.Row="5"><TextBlock Text="用 remote URL 预览（包含当前编辑草稿，不会连接网络）" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,8" /><DockPanel><Button DockPanel.Dock="Right" Content="预览" Click="PreviewRule" Margin="8,0,0,0" AutomationProperties.AutomationId="PreviewSource" /><TextBox x:Name="PreviewUrl" AutomationProperties.AutomationId="PreviewUrl" /></DockPanel></StackPanel>
+          <Button Grid.Row="4" Content="{l10n:Text Source.Save}" Click="SaveRule" HorizontalAlignment="Left" Margin="0,14,0,16" Background="{DynamicResource SelectedBrush}" Foreground="{DynamicResource AccentBrush}" AutomationProperties.AutomationId="SaveSource" />
+          <StackPanel Grid.Row="5"><TextBlock Text="{l10n:Text Source.PreviewHint}" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,8" /><DockPanel><Button DockPanel.Dock="Right" Content="{l10n:Text Action.Preview}" Click="PreviewRule" Margin="8,0,0,0" AutomationProperties.AutomationId="PreviewSource" /><TextBox x:Name="PreviewUrl" AutomationProperties.AutomationId="PreviewUrl" /></DockPanel></StackPanel>
           <TextBlock x:Name="PreviewResult" Grid.Row="6" TextWrapping="Wrap" Foreground="{DynamicResource AccentBrush}" Margin="0,10,0,0" AutomationProperties.AutomationId="PreviewResult" />
         </Grid></ScrollViewer>
       </TabItem>
     </TabControl>
     <TextBlock x:Name="Feedback" Grid.Row="2" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" MinHeight="22" Margin="0,12,0,12" AutomationProperties.AutomationId="SettingsFeedback" AutomationProperties.LiveSetting="Polite" />
-    <Button x:Name="FinishButton" Grid.Row="3" Content="完成" IsCancel="True" HorizontalAlignment="Right" MinWidth="80" Click="Finish" />
+    <Button x:Name="FinishButton" Grid.Row="3" Content="{l10n:Text Action.Done}" IsCancel="True" HorizontalAlignment="Right" MinWidth="80" Click="Finish" />
   </Grid>
 </Window>

@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using RepoTracker.Core.Sources;
 using RepoTracker.Core.Tracking;
 
@@ -12,8 +13,8 @@ public sealed class GitRemoteReader(IGitProcess git)
     {
         var result = await git.RunAsync(["--no-optional-locks", "--git-dir=" + repo.GitDir, "--work-tree=" + repo.WorktreeRoot,
             "-C", repo.WorktreeRoot, "config", "--null", "--get-regexp", @"^(remote\..*\.(url|fetch|mirror|uploadpack)|url\..*\.insteadof)$"], cancellationToken).ConfigureAwait(false);
-        if (result.ExitCode == 1) return new(new(false), null, [], "没有配置 remote。");
-        if (result.ExitCode != 0) return new(new(false, ReadFailed: true), null, [], "无法读取 remote 配置。");
+        if (result.ExitCode == 1) return new(new(false), null, [], Text.Get("Remote.None"));
+        if (result.ExitCode != 0) return new(new(false, ReadFailed: true), null, [], Text.Get("Remote.ReadFailed"));
         var values = result.Output.Split('\0', StringSplitOptions.RemoveEmptyEntries).Select(item =>
         {
             var separator = item.IndexOf('\n');
@@ -22,7 +23,7 @@ public sealed class GitRemoteReader(IGitProcess git)
         }).ToArray();
         var names = values.Where(pair => pair.Key.StartsWith("remote.", StringComparison.Ordinal) && pair.Key.EndsWith(".url", StringComparison.Ordinal))
             .Select(pair => pair.Key[7..^4]).Distinct(StringComparer.Ordinal).OrderBy(name => name != "origin").ThenBy(name => name, StringComparer.Ordinal).ToArray();
-        if (names.Length == 0) return new(new(false), null, [], "没有配置 remote。");
+        if (names.Length == 0) return new(new(false), null, [], Text.Get("Remote.None"));
         var name = names[0];
         string[] Values(string key) => values.Where(pair => pair.Key == key).Select(pair => pair.Value).ToArray();
         var urls = Values($"remote.{name}.url");
@@ -30,13 +31,13 @@ public sealed class GitRemoteReader(IGitProcess git)
         var identity = new RemoteIdentity(true, SourceRules.Host(url), name);
         var refs = Values($"remote.{name}.fetch");
         string? skip = null;
-        if (urls.Length != 1) skip = "存在多个 remote URL，已跳过自动 fetch。";
-        else if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z0-9][A-Za-z0-9._-]*$")) skip = "remote 名称不受支持。";
-        else if (Values($"remote.{name}.mirror").Any(value => value is not ("false" or "no" or "off" or "0"))) skip = "镜像 remote 不支持自动检查。";
-        else if (Values($"remote.{name}.uploadpack").Length > 0) skip = "自定义 upload-pack 不支持自动检查。";
-        else if (values.Any(pair => pair.Key.StartsWith("url.", StringComparison.Ordinal) && url.StartsWith(pair.Value, StringComparison.Ordinal))) skip = "URL 重写配置需要手动检查，已跳过 fetch。";
-        else if (!SafeUrl(url)) skip = "仅支持不含密码或查询参数的 HTTPS / SSH remote；本地路径和其他协议已跳过。";
-        else if (refs.Length != 1 || !SafeRefspec(name, refs[0])) skip = "fetch 映射不受支持；仅接受单一 heads → 对应 remote-tracking 映射。";
+        if (urls.Length != 1) skip = Text.Get("Remote.MultipleUrls");
+        else if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z0-9][A-Za-z0-9._-]*$")) skip = Text.Get("Remote.InvalidName");
+        else if (Values($"remote.{name}.mirror").Any(value => value is not ("false" or "no" or "off" or "0"))) skip = Text.Get("Remote.Mirror");
+        else if (Values($"remote.{name}.uploadpack").Length > 0) skip = Text.Get("Remote.UploadPack");
+        else if (values.Any(pair => pair.Key.StartsWith("url.", StringComparison.Ordinal) && url.StartsWith(pair.Value, StringComparison.Ordinal))) skip = Text.Get("Remote.Rewrite");
+        else if (!SafeUrl(url)) skip = Text.Get("Remote.UrlUnsupported");
+        else if (refs.Length != 1 || !SafeRefspec(name, refs[0])) skip = Text.Get("Remote.RefspecUnsupported");
         return new(identity, url, refs, skip);
     }
 

@@ -1,0 +1,22 @@
+{
+  "Version": "2026-10-17-v1",
+  "Scope": "Regression budgets calibrated on Windows 10, i7-8700K, 12 logical CPUs, 16 GiB RAM, Git 2.56, .NET 10, and the fixed 20-repository dataset. Recalibrate on materially different hardware or workloads; these are not universal product guarantees.",
+  "AppWorkingSetMaxMiB": 200,
+  "AppPrivateMaxMiB": 128,
+  "SteadyPrivateGrowthMaxMiB": 16,
+  "SteadyHandleGrowthMax": 64,
+  "DispatcherP95MaxMs": 50,
+  "DispatcherMaxMs": 250,
+  "OpenToRenderMaxMs": 500,
+  "LocalCheckP95MaxMs": 500,
+  "RemoteCheckP95MaxMs": 1000,
+  "CleanupMaxMs": 2000,
+  "ChurnWritesMin": 4000,
+  "Phases": [
+    { "Name": "minimized", "SecondsMin": 300, "TotalCpuCorePercentMax": 30, "LocalChecksMin": 300, "DescendantsPerSecondMax": 12 },
+    { "Name": "expanded", "SecondsMin": 60, "TotalCpuCorePercentMax": 30, "LocalChecksMin": 60, "DescendantsPerSecondMax": 12 },
+    { "Name": "churn", "SecondsMin": 60, "TotalCpuCorePercentMax": 150, "LocalChecksMin": 300, "DescendantsPerSecondMax": 80 },
+    { "Name": "remote-failure", "SecondsMin": 90, "TotalCpuCorePercentMax": 40, "LocalChecksMin": 80, "DescendantsPerSecondMax": 20 },
+    { "Name": "recovery", "SecondsMin": 120, "TotalCpuCorePercentMax": 30, "LocalChecksMin": 120, "DescendantsPerSecondMax": 12 }
+  ]
+}

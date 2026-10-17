@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using System.Collections.Immutable;
 using System.Threading.Channels;
 using RepoTracker.Core.Tracking;
@@ -211,7 +212,7 @@ public sealed class LocalStatusScheduler : IAsyncDisposable
             result = await checker.CheckAsync(entry.Repository, token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { }
-        catch (Exception) { result = new(null, StatusError.Failed, "本地检查未完成，将在下一轮重试。"); }
+        catch (Exception) { result = new(null, StatusError.Failed, Text.Get("Status.RetryLater")); }
         lock (sync)
         {
             running.Remove(entry);

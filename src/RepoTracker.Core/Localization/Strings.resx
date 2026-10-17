@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Config.ReadFailed" xml:space="preserve"><value>Cannot read settings. Your file has been preserved. Check the profile folder permissions and restart.</value></data>
+  <data name="Config.NewerVersion" xml:space="preserve"><value>These settings were saved by a newer RepoTracker. Open them with that version; the file will not be overwritten.</value></data>
+  <data name="Config.BackupFailed" xml:space="preserve"><value>Neither the settings nor their backup could be restored. Both files have been preserved; saving is disabled.</value></data>
+  <data name="Config.Recovered" xml:space="preserve"><value>Settings were damaged. The original file was preserved and the last valid backup restored. Your next change will save the recovered list.</value></data>
+  <data name="Config.CannotRecover" xml:space="preserve"><value>Cannot restore or back up settings. The original file is unchanged; saving is disabled.</value></data>
+  <data name="Config.NotWritable" xml:space="preserve"><value>Settings are not loaded or cannot be saved. The original file is unchanged.</value></data>
+  <data name="Config.ExternalChange" xml:space="preserve"><value>Settings changed outside this app. Restart before making changes; the external changes have been preserved.</value></data>
+  <data name="Config.TooLarge" xml:space="preserve"><value>Settings are too large to save. Your list is unchanged.</value></data>
+  <data name="Folder.Unavailable" xml:space="preserve"><value>The folder is missing or inaccessible. You can still move this entry to another group or stop tracking it.</value></data>
+  <data name="Repository.Restored" xml:space="preserve"><value>Repository tracking restored.</value></data>
+  <data name="Repository.ChooseFolder" xml:space="preserve"><value>Choose a Git repository folder</value></data>
+  <data name="Group.New" xml:space="preserve"><value>New group</value></data>
+  <data name="Group.Description" xml:space="preserve"><value>Organize repositories by purpose. Use a unique name of 1–30 characters.</value></data>
+  <data name="Group.Name" xml:space="preserve"><value>Group name</value></data>
+  <data name="Action.Create" xml:space="preserve"><value>Create</value></data>
+  <data name="Group.Created" xml:space="preserve"><value>Group created.</value></data>
+  <data name="Repository.Add" xml:space="preserve"><value>Add repository</value></data>
+  <data name="Repository.AddDescription" xml:space="preserve"><value>Choose a repository folder or a subfolder. Only its worktree location is recorded; repository files are unchanged.</value></data>
+  <data name="Repository.Folder" xml:space="preserve"><value>Repository folder</value></data>
+  <data name="Action.Add" xml:space="preserve"><value>Add</value></data>
+  <data name="Repository.Duplicate" xml:space="preserve"><value>This worktree is already tracked. Its entry has been selected.</value></data>
+  <data name="Repository.AddedFallback" xml:space="preserve"><value>Repository added to Ungrouped because the selected group no longer exists.</value></data>
+  <data name="Repository.Added" xml:space="preserve"><value>Repository added. Checking its local status in the background.</value></data>
+  <data name="Group.Rename" xml:space="preserve"><value>Rename group</value></data>
+  <data name="Group.RenameDescription" xml:space="preserve"><value>Renaming preserves all repositories and their order.</value></data>
+  <data name="Action.Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Group.Renamed" xml:space="preserve"><value>Group renamed.</value></data>
+  <data name="Group.Delete" xml:space="preserve"><value>Delete group</value></data>
+  <data name="Group.Deleted" xml:space="preserve"><value>Group deleted. Its repositories were moved to Ungrouped.</value></data>
+  <data name="Group.ExpansionSaved" xml:space="preserve"><value>Group expansion saved.</value></data>
+  <data name="Repository.Opened" xml:space="preserve"><value>Repository folder opened.</value></data>
+  <data name="Group.MoveTo" xml:space="preserve"><value>Move to group</value></data>
+  <data name="Group.Moved" xml:space="preserve"><value>Repository group updated.</value></data>
+  <data name="Repository.RemoveMenu" xml:space="preserve"><value>Stop tracking…</value></data>
+  <data name="Repository.RemoveTitle" xml:space="preserve"><value>Stop tracking repository</value></data>
+  <data name="Repository.Remove" xml:space="preserve"><value>Stop tracking</value></data>
+  <data name="Repository.Removed" xml:space="preserve"><value>Tracking stopped. Select Undo removal to restore it.</value></data>
+  <data name="App.AlreadyRunning" xml:space="preserve"><value>RepoTracker is already running but its window could not be activated. Open it from the taskbar and check that both processes have the same permissions.</value></data>
+  <data name="App.StartFailed" xml:space="preserve"><value>Cannot start RepoTracker. Check the startup arguments and user folder permissions.</value></data>
+  <data name="Repository.Open" xml:space="preserve"><value>Open folder</value></data>
+  <data name="Repository.ActionsHint" xml:space="preserve"><value>Move to group / Stop tracking</value></data>
+  <data name="Action.Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="Action.Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Group.Empty" xml:space="preserve"><value>No repositories in this group</value></data>
+  <data name="App.Tagline" xml:space="preserve"><value>Repository status at a glance</value></data>
+  <data name="Status.RefreshHint" xml:space="preserve"><value>Refresh local status (no network access)</value></data>
+  <data name="Status.Refresh" xml:space="preserve"><value>Refresh local status</value></data>
+  <data name="Window.KeepHint" xml:space="preserve"><value>Keep open (Ctrl+Shift+P), saved automatically</value></data>
+  <data name="Window.Keep" xml:space="preserve"><value>Keep open</value></data>
+  <data name="Settings.Hint" xml:space="preserve"><value>Settings (Ctrl+,)</value></data>
+  <data name="Settings.Window" xml:space="preserve"><value>Settings</value></data>
+  <data name="Action.More" xml:space="preserve"><value>More</value></data>
+  <data name="Window.Collapse" xml:space="preserve"><value>Minimize to taskbar</value></data>
+  <data name="App.Exit" xml:space="preserve"><value>Exit RepoTracker</value></data>
+  <data name="Window.CollapseHint" xml:space="preserve"><value>Minimize to taskbar (Esc)</value></data>
+  <data name="Repository.Undo" xml:space="preserve"><value>Undo removal</value></data>
+  <data name="Group.Heading" xml:space="preserve"><value>Repository groups</value></data>
+  <data name="Group.NewButton" xml:space="preserve"><value>＋ New group</value></data>
+  <data name="Group.Manage" xml:space="preserve"><value>Manage groups</value></data>
+  <data name="Group.FinishManaging" xml:space="preserve"><value>Done</value></data>
+  <data name="Repository.PathColumn" xml:space="preserve"><value>Repository / Path</value></data>
+  <data name="Status.Branch" xml:space="preserve"><value>Branch</value></data>
+  <data name="Status.WorktreeColumn" xml:space="preserve"><value>Worktree / Known upstream</value></data>
+  <data name="Repository.List" xml:space="preserve"><value>Repository list</value></data>
+  <data name="Repository.AddButton" xml:space="preserve"><value>＋ Add repository</value></data>
+  <data name="Repository.AddHint" xml:space="preserve"><value>Add a Git worktree and choose a group (Ctrl+O)</value></data>
+  <data name="Action.Browse" xml:space="preserve"><value>Browse…</value></data>
+  <data name="Group.Assigned" xml:space="preserve"><value>Group</value></data>
+  <data name="Action.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Source.NewHint" xml:space="preserve"><value>Enter a source name and hostname, then save.</value></data>
+  <data name="Settings.Integers" xml:space="preserve"><value>Enter whole numbers for intervals and concurrency.</value></data>
+  <data name="Settings.Saved" xml:space="preserve"><value>Check frequency, theme and scale saved and applied.</value></data>
+  <data name="Window.KeepSaved" xml:space="preserve"><value>Keep open preference saved.</value></data>
+  <data name="Startup.ReadFailed" xml:space="preserve"><value>Cannot read Windows startup settings. Check your user permissions.</value></data>
+  <data name="Startup.WriteDenied" xml:space="preserve"><value>Windows denied changes to startup settings. Check your user permissions.</value></data>
+  <data name="Startup.Enabled" xml:space="preserve"><value>Startup at sign-in enabled. The app will start minimized to the taskbar.</value></data>
+  <data name="Startup.Disabled" xml:space="preserve"><value>Startup at sign-in disabled.</value></data>
+  <data name="Remote.Enabled" xml:space="preserve"><value>Remote checks enabled and queued.</value></data>
+  <data name="Remote.Disabled" xml:space="preserve"><value>Remote checks disabled. Pending checks are being canceled; local checks continue.</value></data>
+  <data name="Remote.Queued" xml:space="preserve"><value>Remote checks queued. Results appear in repository rows and tooltips.</value></data>
+  <data name="Source.Saved" xml:space="preserve"><value>Source rule saved. Repository labels have been updated.</value></data>
+  <data name="Source.SelectFirst" xml:space="preserve"><value>Select a rule to delete first.</value></data>
+  <data name="Source.Deleted" xml:space="preserve"><value>Rule deleted. Unmatched remotes will appear as Unknown service.</value></data>
+  <data name="Settings.LocalRange" xml:space="preserve"><value>Local check interval must be 5–300 seconds.</value></data>
+  <data name="Settings.RemoteRange" xml:space="preserve"><value>Remote check interval must be 1–120 minutes.</value></data>
+  <data name="Settings.ConcurrencyRange" xml:space="preserve"><value>Local concurrency must be 1–4.</value></data>
+  <data name="Settings.ThemeInvalid" xml:space="preserve"><value>Choose the dark or light theme.</value></data>
+  <data name="Settings.ScaleInvalid" xml:space="preserve"><value>Interface scale must be 100%, 125% or 150%.</value></data>
+  <data name="Settings.Title" xml:space="preserve"><value>Settings · RepoTracker</value></data>
+  <data name="Settings.Heading" xml:space="preserve"><value>Settings</value></data>
+  <data name="Settings.CheckTab" xml:space="preserve"><value>Checks and window</value></data>
+  <data name="Settings.Frequency" xml:space="preserve"><value>Check frequency</value></data>
+  <data name="Settings.LocalLabel" xml:space="preserve"><value>Local interval (5–300 sec)</value></data>
+  <data name="Settings.LocalAccessible" xml:space="preserve"><value>Local check interval, seconds</value></data>
+  <data name="Settings.RemoteLabel" xml:space="preserve"><value>Remote interval (1–120 min)</value></data>
+  <data name="Settings.RemoteAccessible" xml:space="preserve"><value>Remote check interval, minutes</value></data>
+  <data name="Settings.ConcurrencyLabel" xml:space="preserve"><value>Local concurrency (1–4)</value></data>
+  <data name="Settings.ConcurrencyAccessible" xml:space="preserve"><value>Concurrent local checks</value></data>
+  <data name="Settings.Appearance" xml:space="preserve"><value>Appearance</value></data>
+  <data name="Settings.Theme" xml:space="preserve"><value>Theme</value></data>
+  <data name="Theme.Dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="Theme.Light" xml:space="preserve"><value>Light</value></data>
+  <data name="Settings.Scale" xml:space="preserve"><value>Interface scale</value></data>
+  <data name="Settings.Save" xml:space="preserve"><value>Save checks and appearance</value></data>
+  <data name="Settings.Immediate" xml:space="preserve"><value>Changes apply immediately. File changes trigger earlier local checks; active checks finish normally.</value></data>
+  <data name="Remote.Heading" xml:space="preserve"><value>Remote checks</value></data>
+  <data name="Remote.Enable" xml:space="preserve"><value>Enable remote checks</value></data>
+  <data name="Remote.Disclosure" xml:space="preserve"><value>When enabled, connects to remotes, downloads Git objects and updates remote-tracking refs. Does not commit, push or change worktree files, the current branch or upstream settings.</value></data>
+  <data name="Remote.Help" xml:space="preserve"><value>Checks origin first, otherwise the first remote by name. Supports standard HTTPS / SSH and constrained fetch mappings. No sign-in dialog appears on authentication failure. Configure Git Credential Manager or SSH outside the app first.</value></data>
+  <data name="Remote.Refresh" xml:space="preserve"><value>Check remotes now</value></data>
+  <data name="Startup.Toggle" xml:space="preserve"><value>Start when I sign in to Windows</value></data>
+  <data name="Startup.Help" xml:space="preserve"><value>Saved automatically. Starts minimized at sign-in; select its taskbar icon to open. Pin the icon using the Windows app menu.</value></data>
+  <data name="Source.Tab" xml:space="preserve"><value>Source rules</value></data>
+  <data name="Source.PriorityHint" xml:space="preserve"><value>Exact hosts take priority; wildcards use the longest suffix. Rules only affect display.</value></data>
+  <data name="Action.New" xml:space="preserve"><value>New</value></data>
+  <data name="Source.Delete" xml:space="preserve"><value>Delete selected rule</value></data>
+  <data name="Source.Name" xml:space="preserve"><value>Source name</value></data>
+  <data name="Source.HostLabel" xml:space="preserve"><value>Hostname / *.example.com</value></data>
+  <data name="Source.HostAccessible" xml:space="preserve"><value>Source hostname or wildcard rule</value></data>
+  <data name="Source.Icon" xml:space="preserve"><value>Icon</value></data>
+  <data name="Source.IconAccessible" xml:space="preserve"><value>Source icon type</value></data>
+  <data name="Source.Save" xml:space="preserve"><value>Save rule</value></data>
+  <data name="Source.PreviewHint" xml:space="preserve"><value>Preview a remote URL (includes your draft; no network access)</value></data>
+  <data name="Action.Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="Action.Done" xml:space="preserve"><value>Done</value></data>
+  <data name="Status.MissingFolder" xml:space="preserve"><value>Folder missing or inaccessible. The tracking entry has been preserved.</value></data>
+  <data name="Status.GitDenied" xml:space="preserve"><value>Git denied access. Check folder permissions or trusted directory settings.</value></data>
+  <data name="Status.NotWorktree" xml:space="preserve"><value>This Git worktree is no longer valid. Check the folder; the tracking entry has been preserved.</value></data>
+  <data name="Status.GitFailed" xml:space="preserve"><value>Git check failed. Make sure the repository is intact and accessible.</value></data>
+  <data name="Status.InvalidOutput" xml:space="preserve"><value>Git output is incomplete or unsupported. The repository has not been marked clean.</value></data>
+  <data name="Status.NoPermission" xml:space="preserve"><value>No permission to read the repository.</value></data>
+  <data name="Status.ReadFailed" xml:space="preserve"><value>Cannot read the repository. Check the disk and folder.</value></data>
+  <data name="Remote.None" xml:space="preserve"><value>No remote configured.</value></data>
+  <data name="Remote.ReadFailed" xml:space="preserve"><value>Cannot read remote configuration.</value></data>
+  <data name="Remote.MultipleUrls" xml:space="preserve"><value>Multiple remote URLs found. Automatic fetch skipped.</value></data>
+  <data name="Remote.InvalidName" xml:space="preserve"><value>Unsupported remote name.</value></data>
+  <data name="Remote.Mirror" xml:space="preserve"><value>Mirror remotes do not support automatic checks.</value></data>
+  <data name="Remote.UploadPack" xml:space="preserve"><value>Custom upload-pack settings do not support automatic checks.</value></data>
+  <data name="Remote.Rewrite" xml:space="preserve"><value>URL rewrite settings require a manual check. Fetch skipped.</value></data>
+  <data name="Remote.UrlUnsupported" xml:space="preserve"><value>Only HTTPS / SSH remotes without passwords or query parameters are supported. Local paths and other protocols are skipped.</value></data>
+  <data name="Remote.RefspecUnsupported" xml:space="preserve"><value>Unsupported fetch mapping. Only a single heads-to-matching-remote-tracking mapping is accepted.</value></data>
+  <data name="Startup.Foreign" xml:space="preserve"><value>The startup entry points to another app location and was preserved. Check Windows startup settings.</value></data>
+  <data name="Startup.NotSaved" xml:space="preserve"><value>Windows startup entry was not saved. Check your user permissions.</value></data>
+  <data name="Startup.InvalidPath" xml:space="preserve"><value>Cannot register startup from this application location.</value></data>
+  <data name="Startup.PathTooLong" xml:space="preserve"><value>The application and profile paths are too long for startup registration. Use a shorter installation path.</value></data>
+  <data name="Remote.Off" xml:space="preserve"><value>Remote off</value></data>
+  <data name="Remote.Checking" xml:space="preserve"><value>Checking remote…</value></data>
+  <data name="Remote.Never" xml:space="preserve"><value>Remote not checked yet</value></data>
+  <data name="Remote.TimePrefix" xml:space="preserve"><value>Remote </value></data>
+  <data name="Remote.Skipped" xml:space="preserve"><value>Remote skipped</value></data>
+  <data name="Remote.Authentication" xml:space="preserve"><value>Remote authentication failed</value></data>
+  <data name="Remote.Offline" xml:space="preserve"><value>Remote offline</value></data>
+  <data name="Remote.Timeout" xml:space="preserve"><value>Remote timeout</value></data>
+  <data name="Remote.Failed" xml:space="preserve"><value>Remote check failed</value></data>
+  <data name="Remote.LastSuccess" xml:space="preserve"><value>
+Last remote success: </value></data>
+  <data name="Remote.NoSuccess" xml:space="preserve"><value>
+No successful remote check in this session.</value></data>
+  <data name="Remote.UpstreamHint" xml:space="preserve"><value>
+The source remote may differ from the branch upstream. ↑↓ always use the locally known upstream.</value></data>
+  <data name="Status.Detached" xml:space="preserve"><value>Detached HEAD</value></data>
+  <data name="Status.NewRepository" xml:space="preserve"><value>New repository</value></data>
+  <data name="Status.Unborn" xml:space="preserve"><value>No initial commit</value></data>
+  <data name="Status.Unreachable" xml:space="preserve"><value>Unavailable</value></data>
+  <data name="Status.NotRepository" xml:space="preserve"><value>Not a repository</value></data>
+  <data name="Status.GitMissing" xml:space="preserve"><value>Git not found</value></data>
+  <data name="Status.Timeout" xml:space="preserve"><value>Check timed out</value></data>
+  <data name="Status.AccessDenied" xml:space="preserve"><value>Access denied</value></data>
+  <data name="Status.ParseFailed" xml:space="preserve"><value>Cannot parse status</value></data>
+  <data name="Status.Failed" xml:space="preserve"><value>Check failed</value></data>
+  <data name="Status.Checking" xml:space="preserve"><value>Checking…</value></data>
+  <data name="Status.Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="Status.Dirty" xml:space="preserve"><value>Modified</value></data>
+  <data name="Status.Clean" xml:space="preserve"><value>Clean</value></data>
+  <data name="Status.Retry" xml:space="preserve"><value>Will retry automatically</value></data>
+  <data name="Status.NotRead" xml:space="preserve"><value>Git status not read yet</value></data>
+  <data name="Status.NoCommits" xml:space="preserve"><value>No commits yet</value></data>
+  <data name="Status.NoUpstream" xml:space="preserve"><value>No upstream</value></data>
+  <data name="Status.UnknownCounts" xml:space="preserve"><value>Upstream counts unknown</value></data>
+  <data name="Status.InSync" xml:space="preserve"><value>Matches known upstream</value></data>
+  <data name="Status.LocalPrefix" xml:space="preserve"><value>Local </value></data>
+  <data name="Status.LastSuccessPrefix" xml:space="preserve"><value>Last success </value></data>
+  <data name="Status.CheckingSuffix" xml:space="preserve"><value> · Checking</value></data>
+  <data name="Status.AttemptPrefix" xml:space="preserve"><value>Attempt </value></data>
+  <data name="Status.PreviousResult" xml:space="preserve"><value>Last successful result: </value></data>
+  <data name="Status.None" xml:space="preserve"><value>None</value></data>
+  <data name="Status.WatchHint" xml:space="preserve"><value>
+Scheduled checks are used when file watching is unavailable.</value></data>
+  <data name="Repository.Loading" xml:space="preserve"><value>Loading repositories…</value></data>
+  <data name="Remote.DisabledSummary" xml:space="preserve"><value>Remote checks disabled</value></data>
+  <data name="Status.Waiting" xml:space="preserve"><value>Waiting for local check</value></data>
+  <data name="Action.Failed" xml:space="preserve"><value>Action failed; your list is unchanged. Check permissions, free disk space or locked files and try again.</value></data>
+  <data name="Group.NameLength" xml:space="preserve"><value>Group names must contain 1–30 characters.</value></data>
+  <data name="Group.ControlCharacters" xml:space="preserve"><value>Group names cannot contain line breaks or control characters.</value></data>
+  <data name="Group.Reserved" xml:space="preserve"><value>“未分组” is reserved for the system group. Choose another name.</value></data>
+  <data name="Group.Duplicate" xml:space="preserve"><value>A group with this name already exists. Choose another name.</value></data>
+  <data name="Repository.AbsolutePath" xml:space="preserve"><value>Choose a folder or enter its full absolute path.</value></data>
+  <data name="Repository.InvalidPath" xml:space="preserve"><value>Folder missing or inaccessible. Check the path and permissions.</value></data>
+  <data name="Repository.InvalidWorktree" xml:space="preserve"><value>Cannot identify a Git worktree. Check that this is a repository or linked worktree, then check permissions and Git trusted directory settings.</value></data>
+  <data name="Repository.InvalidGitPath" xml:space="preserve"><value>Git returned unsupported directory information. Check that your Git version supports rev-parse --path-format.</value></data>
+  <data name="Repository.ResolveFailed" xml:space="preserve"><value>Cannot resolve the folder's actual location.</value></data>
+  <data name="Remote.FolderUnavailable" xml:space="preserve"><value>Folder unavailable. Fetch was not run.</value></data>
+  <data name="Remote.SymbolicRefs" xml:space="preserve"><value>Remote-tracking refs contain unsupported symbolic references. Fetch skipped.</value></data>
+  <data name="Remote.Success" xml:space="preserve"><value>Remote check succeeded. Refreshing local status.</value></data>
+  <data name="Remote.AuthenticationHint" xml:space="preserve"><value>Authentication or SSH host verification failed. Configure credentials outside the app first.</value></data>
+  <data name="Remote.OfflineHint" xml:space="preserve"><value>Network or remote unavailable. The last successful result has been preserved.</value></data>
+  <data name="Remote.FailureHint" xml:space="preserve"><value>Fetch failed. Check the remote and repository configuration outside the app.</value></data>
+  <data name="Remote.TimeoutHint" xml:space="preserve"><value>Remote check timed out. Git has been terminated.</value></data>
+  <data name="Remote.GitUnavailable" xml:space="preserve"><value>Git unavailable. Remote check could not complete.</value></data>
+  <data name="Remote.ConfigFailed" xml:space="preserve"><value>Cannot read remote configuration. Local checks continue.</value></data>
+  <data name="Source.Server" xml:space="preserve"><value>Self-hosted</value></data>
+  <data name="Source.Invalid" xml:space="preserve"><value>Invalid source rule.</value></data>
+  <data name="Source.NameLength" xml:space="preserve"><value>Source names must contain 1–30 characters and no control characters.</value></data>
+  <data name="Source.InvalidHost" xml:space="preserve"><value>Enter a hostname or *.example.com without a protocol, port or path.</value></data>
+  <data name="Source.Duplicate" xml:space="preserve"><value>A rule for this host already exists. Edit that rule instead.</value></data>
+  <data name="Source.Pending" xml:space="preserve"><value>Source pending</value></data>
+  <data name="Source.NotRead" xml:space="preserve"><value>Remote configuration has not been read successfully.</value></data>
+  <data name="Source.Local" xml:space="preserve"><value>Local repository</value></data>
+  <data name="Source.Unknown" xml:space="preserve"><value>Unknown service</value></data>
+  <data name="Source.Unsupported" xml:space="preserve"><value>The remote uses a local path or an unsupported URL format.</value></data>
+  <data name="Git.StartFailed" xml:space="preserve"><value>Cannot start Git. Install Git for Windows and make sure it is available on PATH.</value></data>
+  <data name="Git.Timeout" xml:space="preserve"><value>Git check timed out. Make sure the folder is accessible and try again.</value></data>
+  <data name="Git.ParseFailed" xml:space="preserve"><value>Cannot parse the complete Git porcelain v2 status output.</value></data>
+  <data name="Status.RetryLater" xml:space="preserve"><value>Local check did not complete. It will retry on the next cycle.</value></data>
+  <data name="Repository.NoUndo" xml:space="preserve"><value>No removal to undo.</value></data>
+  <data name="Repository.AlreadyRestored" xml:space="preserve"><value>This repository has already been added again.</value></data>
+  <data name="Config.Loading" xml:space="preserve"><value>Settings are still loading. Try again shortly.</value></data>
+  <data name="Config.ReadOnly" xml:space="preserve"><value>Settings cannot be saved. The original file has been preserved.</value></data>
+  <data name="Group.SystemProtected" xml:space="preserve"><value>The system Ungrouped group cannot be renamed or deleted.</value></data>
+  <data name="Group.Missing" xml:space="preserve"><value>This group no longer exists. Select another group.</value></data>
+  <data name="Repository.Missing" xml:space="preserve"><value>This repository is no longer tracked.</value></data>
+  <data name="Remote.RetryLater" xml:space="preserve"><value>Remote check failed. It will retry on the next cycle.</value></data>
+  <data name="Group.Ungrouped" xml:space="preserve"><value>Ungrouped</value></data>
+  <data name="Language.Label" xml:space="preserve"><value>Interface language</value></data>
+  <data name="Language.System" xml:space="preserve"><value>Follow system</value></data>
+  <data name="Language.RestartHint" xml:space="preserve"><value>Defaults to the Windows display language. Language changes apply on next launch; unsupported languages use English.</value></data>
+  <data name="Language.Saved" xml:space="preserve"><value>Language preference saved. It will apply on next launch.</value></data>
+  <data name="Language.Save" xml:space="preserve"><value>Save language</value></data>
+  <data name="Language.Invalid" xml:space="preserve"><value>Choose Follow system, 简体中文 or English.</value></data>
+  <data name="Repository.OpenAccessible" xml:space="preserve"><value>Open folder: {0}</value></data>
+  <data name="Repository.ActionsAccessible" xml:space="preserve"><value>Repository actions: {0}</value></data>
+  <data name="Config.CorruptEmpty" xml:space="preserve"><value>Settings were damaged. Preserved {0}; using an empty list.</value></data>
+  <data name="Group.DeleteDescription" xml:space="preserve"><value>Deleting “{0}” moves its repositories ({1}) to Ungrouped and keeps tracking them. Repository files will not be deleted.</value></data>
+  <data name="Repository.RemoveDescription" xml:space="preserve"><value>Remove “{0}” from the list only. Local files will not be deleted. You can undo the most recent removal.</value></data>
+  <data name="Status.Conflicts" xml:space="preserve"><value>Conflicts · {0}</value></data>
+  <data name="Status.CountDetails" xml:space="preserve"><value>Staged {0}, unstaged {1}, untracked {2}, conflicts {3}
+</value></data>
+  <data name="Status.BranchDetails" xml:space="preserve"><value>Branch: {0} {1}
+Known upstream: {2}
+</value></data>
+  <data name="Remote.EnabledSummary" xml:space="preserve"><value>Remote checks enabled · Every {0} min</value></data>
+  <data name="Status.RepositoryCount" xml:space="preserve"><value>Repositories: {0} · </value></data>
+  <data name="Status.CheckingCount" xml:space="preserve"><value>Checking: {0}</value></data>
+  <data name="Status.AutoSave" xml:space="preserve"><value>Repositories and groups saved automatically · Local checks every {0} sec</value></data>
+  <data name="Source.NoMatch" xml:space="preserve"><value>{0} · No matching rule</value></data>
+  <data name="Source.Match" xml:space="preserve"><value>{0} → {1} · Exact match first, then longest host suffix</value></data>
+</root>

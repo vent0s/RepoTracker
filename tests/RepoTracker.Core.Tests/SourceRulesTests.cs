@@ -29,9 +29,9 @@ public sealed class SourceRulesTests
         Assert.Equal("主机", Match("code.dev.example.com").Name);
         Assert.Equal("研发", Match("other.dev.example.com").Name);
         Assert.Equal("通用", Match("dev.example.com").Name);
-        Assert.Equal("未知服务", Match("example.com").Name);
-        Assert.Equal("未知服务", Match("evil-example.com").Name);
-        Assert.Equal("未知服务", Match("example.com.evil.test").Name);
+        Assert.Equal(RepoTracker.Core.Localization.Text.Get("Source.Unknown"), Match("example.com").Name);
+        Assert.Equal(RepoTracker.Core.Localization.Text.Get("Source.Unknown"), Match("evil-example.com").Name);
+        Assert.Equal(RepoTracker.Core.Localization.Text.Get("Source.Unknown"), Match("example.com.evil.test").Name);
         Assert.Contains("code.dev.example.com", Match("code.dev.example.com").Explanation);
     }
 
@@ -49,12 +49,12 @@ public sealed class SourceRulesTests
         var rule = SourceRules.Validate(Rule(" 自建 ", "*.EXAMPLE.COM"), []);
         Assert.Equal("*.example.com", rule.Pattern); Assert.Equal("自建", rule.Name);
         Assert.Throws<TrackerException>(() => SourceRules.Validate(Rule("重复", "*.example.com"), [rule]));
-        Assert.Equal("本地仓库", SourceRules.Match(new(false), []).Name);
-        Assert.Equal("未知服务", SourceRules.Match(new(true), []).Name);
+        Assert.Equal(RepoTracker.Core.Localization.Text.Get("Source.Local"), SourceRules.Match(new(false), []).Name);
+        Assert.Equal(RepoTracker.Core.Localization.Text.Get("Source.Unknown"), SourceRules.Match(new(true), []).Name);
         Assert.Equal("?", SourceRules.Match(new(true), []).Badge);
-        Assert.Equal("来源待检查", SourceRules.Match(null, []).Name);
+        Assert.Equal(RepoTracker.Core.Localization.Text.Get("Source.Pending"), SourceRules.Match(null, []).Name);
         Assert.Equal("GitHub", SourceRules.Match(new(true, "github.com"), SourceRules.Defaults).Name);
-        Assert.Equal("未知服务", SourceRules.Match(new(true, "github.com"), []).Name);
+        Assert.Equal(RepoTracker.Core.Localization.Text.Get("Source.Unknown"), SourceRules.Match(new(true, "github.com"), []).Name);
     }
     private static SourceRule Rule(string name, string pattern) => new(Guid.NewGuid(), name, pattern, SourceIcon.Server);
 }

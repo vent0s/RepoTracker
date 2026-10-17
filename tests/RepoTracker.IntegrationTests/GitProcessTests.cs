@@ -34,7 +34,7 @@ public sealed class GitProcessTests
         else
         {
             var error = await Assert.ThrowsAsync<GitExecutionException>(() => operation);
-            Assert.Contains("超时", error.Message);
+            Assert.Equal(RepoTracker.Core.Localization.Text.Get("Git.Timeout"), error.Message);
         }
         Assert.True(child.HasExited, "Timed out or cancelled child process was not reaped.");
         }

@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
@@ -48,7 +49,7 @@ public sealed class GitProcess(string executable = "git", TimeSpan? timeout = nu
         info.Environment["LANG"] = "C";
         using var process = new Process { StartInfo = info };
         try { process.Start(); }
-        catch (Win32Exception) { throw new GitExecutionException(StatusError.GitUnavailable, "无法启动 Git。请确认已安装 Git for Windows，并可从 PATH 访问。"); }
+        catch (Win32Exception) { throw new GitExecutionException(StatusError.GitUnavailable, Text.Get("Git.StartFailed")); }
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(timeout ?? TimeSpan.FromSeconds(10));
         var stdout = process.StandardOutput.ReadToEndAsync();
@@ -65,7 +66,7 @@ public sealed class GitProcess(string executable = "git", TimeSpan? timeout = nu
             await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
             await Task.WhenAll(stdout, stderr).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            throw new GitExecutionException(StatusError.Timeout, "Git 检查超时，请确认目录可以访问后重试。");
+            throw new GitExecutionException(StatusError.Timeout, Text.Get("Git.Timeout"));
         }
     }
 }

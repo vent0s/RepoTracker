@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -21,7 +22,7 @@ public sealed class JsonConfigurationStore(string profileDirectory) : IConfigura
         byte[]? bytes;
         try { bytes = await ReadAsync(path, cancellationToken); }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-        { return new(new(), "unreadable", false, "无法读取配置，原文件已保留。请检查 profile 目录权限后重新启动。"); }
+        { return new(new(), "unreadable", false, Text.Get("Config.ReadFailed")); }
         var revision = Fingerprint(bytes);
         if (bytes is null) { writable = true; return new(new(), revision); }
         try
@@ -32,7 +33,7 @@ public sealed class JsonConfigurationStore(string profileDirectory) : IConfigura
             return new(state, revision);
         }
         catch (FutureSchemaException)
-        { return new(new(), revision, false, "配置来自更新版本的 RepoTracker。请使用对应版本打开；当前不会覆盖文件。"); }
+        { return new(new(), revision, false, Text.Get("Config.NewerVersion")); }
         catch (Exception error) when (error is JsonException or TrackerException or InvalidDataException or ArgumentException)
         {
             try
@@ -45,28 +46,28 @@ public sealed class JsonConfigurationStore(string profileDirectory) : IConfigura
                 {
                     try { recovered = Deserialize(backup); lastGood = Serialize(recovered); }
                     catch (Exception backupError) when (backupError is JsonException or TrackerException or InvalidDataException or ArgumentException or FutureSchemaException)
-                    { return new(new(), revision, false, "配置和备份均无法恢复；原文件及损坏副本已保留，当前禁止保存。"); }
+                    { return new(new(), revision, false, Text.Get("Config.BackupFailed")); }
                 }
                 writable = true;
                 return new(recovered, revision, true, backup is null
-                    ? $"配置损坏，已保留 {Path.GetFileName(preserved)}，当前使用空列表。"
-                    : "配置损坏，已保留原文件副本并读回上一次有效备份；下次修改时保存恢复后的列表。");
+                    ? Text.Format("Config.CorruptEmpty", Path.GetFileName(preserved))
+                    : Text.Get("Config.Recovered"));
             }
             catch (Exception backupError) when (backupError is IOException or UnauthorizedAccessException)
-            { return new(new(), revision, false, "配置无法恢复或无法备份，原文件未覆盖，当前禁止保存。"); }
+            { return new(new(), revision, false, Text.Get("Config.CannotRecover")); }
         }
     }
 
     public async Task<string> SaveAsync(TrackerState state, string expectedRevision, CancellationToken cancellationToken = default)
     {
-        if (!writable) throw new TrackerException("配置尚未加载或不可写，原文件未覆盖。");
+        if (!writable) throw new TrackerException(Text.Get("Config.NotWritable"));
         Directory.CreateDirectory(profileDirectory);
         await using var lease = new FileStream(Path.Combine(profileDirectory, "state.lock"), FileMode.OpenOrCreate,
             FileAccess.ReadWrite, FileShare.None, 1, FileOptions.Asynchronous);
         var current = await ReadAsync(path, cancellationToken);
-        if (Fingerprint(current) != expectedRevision) throw new TrackerException("配置已被其他程序修改。请重新启动后再操作，外部内容未覆盖。");
+        if (Fingerprint(current) != expectedRevision) throw new TrackerException(Text.Get("Config.ExternalChange"));
         var bytes = Serialize(Validate(state));
-        if (bytes.Length > MaxBytes) throw new TrackerException("配置过大，无法保存；原列表未改变。");
+        if (bytes.Length > MaxBytes) throw new TrackerException(Text.Get("Config.TooLarge"));
         if (lastGood is not null) await AtomicWriteAsync(path + ".bak", lastGood, cancellationToken);
         await AtomicWriteAsync(path, bytes, cancellationToken);
         lastGood = bytes;
@@ -127,6 +128,9 @@ public sealed class JsonConfigurationStore(string profileDirectory) : IConfigura
     private static TrackerState Validate(TrackerState state)
     {
         if (state.Preferences is null) throw new InvalidDataException("Missing preferences.");
+        // Unknown optional language codes must not invalidate an otherwise usable repository list.
+        if (!Text.IsSupportedPreference(state.Preferences.Language))
+            state = state with { Preferences = state.Preferences with { Language = Text.SystemLanguage } };
         state.Preferences.Validate();
         if (state.Repositories.IsDefault || state.Groups.IsDefault || state.Sources.IsDefault) throw new InvalidDataException("Null collection.");
         var sourceIds = new HashSet<Guid>();

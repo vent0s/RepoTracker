@@ -1,3 +1,4 @@
+using RepoTracker.Core.Localization;
 using System.Globalization;
 
 namespace RepoTracker.Core.Status;
@@ -61,5 +62,5 @@ public static class PorcelainV2Parser
         return new(kind, kind == HeadKind.Detached ? null : head, kind == HeadKind.Unborn ? null : oid,
             upstream, ahead, behind, staged, unstaged, untracked, conflicts);
     }
-    private static FormatException Invalid() => new("无法识别完整的 Git porcelain v2 状态输出。");
+    private static FormatException Invalid() => new(Text.Get("Git.ParseFailed"));
 }
