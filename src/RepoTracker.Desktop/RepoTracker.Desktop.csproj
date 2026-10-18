@@ -5,9 +5,10 @@
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.4.0-preview.2</Version>
+    <Version>0.4.0-preview.5</Version>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="RepoTracker.Desktop.TestHost" />
     <ProjectReference Include="../RepoTracker.Core/RepoTracker.Core.csproj" />
     <ProjectReference Include="../RepoTracker.Infrastructure/RepoTracker.Infrastructure.csproj" />
   </ItemGroup>

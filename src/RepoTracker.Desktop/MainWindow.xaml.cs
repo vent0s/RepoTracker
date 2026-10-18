@@ -12,6 +12,7 @@ using RepoTracker.Core.Status;
 using RepoTracker.Desktop.ViewModels;
 using RepoTracker.Desktop.Windows;
 using RepoTracker.Infrastructure.Runtime;
+using RepoTracker.Infrastructure.Git;
 
 namespace RepoTracker.Desktop;
 
@@ -174,6 +175,27 @@ public partial class MainWindow : Window
         log.Write("settings.closed");
     }
 
+    internal bool CanUseTrayCommands => !closing && !collapse.IsSuspended;
+    internal IDisposable SuspendForTrayMenu() => collapse.Suspend();
+
+    internal void RestoreFromTray()
+    {
+        if (closing) return;
+        // Keep the existing modal workflow in front; never open a second settings dialog.
+        var dialog = OwnedWindows.Cast<Window>().LastOrDefault(window => window.IsVisible);
+        while (dialog?.OwnedWindows.Cast<Window>().LastOrDefault(window => window.IsVisible) is { } child) dialog = child;
+        if (dialog is not null) { NativeWindows.Activate(dialog); return; }
+        if (collapse.IsSuspended) return;
+        RestorePanel();
+    }
+
+    internal void ShowSettingsFromTray()
+    {
+        var available = CanUseTrayCommands;
+        RestoreFromTray();
+        if (available) ShowSettings();
+    }
+
     public string? ChooseFolder(Window? owner = null)
     {
         using var suspension = collapse.Suspend();
@@ -196,16 +218,40 @@ public partial class MainWindow : Window
                 added = await Model.Registry.AddAsync(path, groupId, token);
                 Model.Notice = added.AlreadyTracked ? Text.Get("Repository.Duplicate")
                     : added.GroupFellBack ? Text.Get("Repository.AddedFallback") : Text.Get("Repository.Added");
-            }, ChooseFolder));
+            }, ChooseFolder, (owner, path, groupId) =>
+            {
+                var imported = DiscoverRepositories(owner, path, groupId, completeSingle: true);
+                added = imported.FirstOrDefault();
+                return imported.Count > 0;
+            }));
         if (added is not null) _ = RevealRepositoryAsync(added.Repository);
+    }
+
+    private IReadOnlyList<AddRepositoryResult> DiscoverRepositories(Window owner, string path, Guid? groupId, bool completeSingle = false)
+    {
+        if (completeSingle)
+        {
+            if (string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path)) throw new TrackerException(Text.Get("Repository.AbsolutePath"));
+            if (!Directory.Exists(path)) throw new TrackerException(Text.Get("Repository.InvalidPath"));
+        }
+        var focus = Keyboard.FocusedElement;
+        using var suspension = collapse.Suspend();
+        var dialog = new RepositoryDiscoveryWindow(new NestedRepositoryScanner(new GitRepositoryLocator(new GitProcess())), Model.Registry, path, groupId, completeSingle)
+            { Owner = owner };
+        dialog.ShowDialog();
+        if (dialog.Imported.Count > 0)
+            Model.Notice = (dialog.Imported.All(result => result.AlreadyTracked) ? Text.Get("Repository.Duplicate")
+                : Text.Format("Repository.Imported", dialog.Imported.Count(result => !result.AlreadyTracked)))
+                + (dialog.Imported.Any(result => result.GroupFellBack) ? " · " + Text.Get("Repository.AddedFallback") : "");
+        if (owner == this) RestoreFocusAfterDialog(focus);
+        return dialog.Imported;
     }
 
     private async Task RevealRepositoryAsync(TrackedRepository repo)
     {
         await Model.ExecuteAsync(async () =>
         {
-            var group = Model.Groups.First(item => item.Id == repo.GroupId);
-            if (!group.IsExpanded) await Model.Registry.SetCollapsedAsync(repo.GroupId, false, lifetime.Token);
+            await Model.Registry.RevealAsync(repo.Id, lifetime.Token);
             Model.Highlight(repo.Id);
         }, Model.Notice);
         await Dispatcher.InvokeAsync(() => { BringRepositoryIntoView(this, repo.Id); }, System.Windows.Threading.DispatcherPriority.Loaded);
@@ -283,6 +329,14 @@ public partial class MainWindow : Window
             await Model.ExecuteAsync(() => { Model.Registry.OpenFolder(row.Id); return Task.CompletedTask; }, Text.Get("Repository.Opened"));
     }
 
+    private async void ToggleRepositoryChildren(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: RepositoryRow row } || !row.HasChildren) return;
+        var focus = Keyboard.FocusedElement;
+        await Model.ExecuteAsync(() => Model.Registry.SetChildrenCollapsedAsync(row.Id, row.IsExpanded, lifetime.Token), Text.Get("Repository.ExpansionSaved"));
+        RestoreFocusAfterDialog(focus);
+    }
+
     private void RepositoryMenu(object sender, RoutedEventArgs e)
     {
         if (sender is not Button { DataContext: RepositoryRow row } button) return;
@@ -297,6 +351,13 @@ public partial class MainWindow : Window
             move.Items.Add(item);
         }
         menu.Items.Add(move);
+        var discover = new MenuItem { Header = Text.Get("Repository.ScanAction"), IsEnabled = Model.CanEdit };
+        discover.Click += (_, _) => Dispatcher.BeginInvoke(async () =>
+        {
+            var imported = DiscoverRepositories(this, row.Path, row.Repository.GroupId);
+            if (imported.FirstOrDefault() is { } added) await RevealRepositoryAsync(added.Repository);
+        });
+        menu.Items.Add(discover);
         menu.Items.Add(new Separator());
         var remove = new MenuItem { Header = Text.Get("Repository.RemoveMenu"), IsEnabled = Model.CanEdit };
         remove.Click += (_, _) => Dispatcher.BeginInvoke(() => ShowEntry(new(Text.Get("Repository.RemoveTitle"), Text.Format("Repository.RemoveDescription", row.Name),

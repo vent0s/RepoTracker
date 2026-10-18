@@ -7,7 +7,7 @@ using RepoTracker.Core.Sources;
 namespace RepoTracker.Core.Tracking;
 
 public sealed record TrackedRepository(Guid Id, string WorktreeRoot, string GitDir, string CommonDir,
-    string DisplayName, Guid? GroupId, DateTimeOffset AddedAt);
+    string DisplayName, Guid? GroupId, DateTimeOffset AddedAt, bool ChildrenCollapsed = false);
 public sealed record RepositoryGroup(Guid Id, string Name, long Order, bool Collapsed = false);
 public sealed record RepositoryLocation(string WorktreeRoot, string GitDir, string CommonDir);
 

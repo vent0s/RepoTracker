@@ -29,6 +29,23 @@ public sealed class ConfigurationTests
     }
 
     [Fact]
+    public async Task RepositoryExpansionRoundtripsAndOlderProfilesDefaultToExpanded()
+    {
+        var area = new TestWorkspace(); var state = Sample();
+        var json = JsonSerializer.SerializeToNode(state, Json)!;
+        json["repositories"]![0]!.AsObject().Remove("childrenCollapsed");
+        await File.WriteAllTextAsync(Path.Combine(area.Root, "state.json"), json.ToJsonString());
+        var store = new JsonConfigurationStore(area.Root); var loaded = await store.LoadAsync();
+        Assert.False(loaded.State.Repositories[0].ChildrenCollapsed);
+        var collapsed = loaded.State with { Repositories = [loaded.State.Repositories[0] with { ChildrenCollapsed = true }] };
+        await store.SaveAsync(collapsed, loaded.Revision);
+        var reloaded = await new JsonConfigurationStore(area.Root).LoadAsync();
+        Assert.True(reloaded.State.Repositories[0].ChildrenCollapsed);
+        Assert.Equal(4, reloaded.State.SchemaVersion);
+        Assert.Equal(collapsed.Repositories[0], reloaded.State.Repositories[0]);
+    }
+
+    [Fact]
     public async Task LegacyWithoutGroupsAndUnknownGroupIdFallBackWithoutLosingRepositories()
     {
         var area = new TestWorkspace(); var state = Sample();

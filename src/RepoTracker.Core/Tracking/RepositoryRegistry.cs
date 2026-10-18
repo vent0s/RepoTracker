@@ -66,22 +66,44 @@ public sealed class RepositoryRegistry(IConfigurationStore store, IRepositoryLoc
             : state with { Groups = state.Groups.Replace(FindGroup(state, id), FindGroup(state, id) with { Collapsed = collapsed }) }, cancellationToken);
 
     public async Task<AddRepositoryResult> AddAsync(string path, Guid? groupId, CancellationToken cancellationToken = default)
+        => (await AddPathsAsync([path], groupId, false, cancellationToken))[0];
+
+    /// <summary>Revalidate discovered worktree roots and publish the entire batch in one transaction.</summary>
+    public Task<IReadOnlyList<AddRepositoryResult>> AddManyAsync(IEnumerable<string> paths, Guid? groupId,
+        CancellationToken cancellationToken = default) => AddPathsAsync(paths, groupId, true, cancellationToken);
+
+    private async Task<IReadOnlyList<AddRepositoryResult>> AddPathsAsync(IEnumerable<string> paths, Guid? groupId, bool requireRoots,
+        CancellationToken cancellationToken = default)
     {
         EnsureWritable();
-        var location = await locator.LocateAsync(path, cancellationToken);
-        AddRepositoryResult? result = null;
+        var locations = new List<RepositoryLocation>();
+        foreach (var path in paths)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var location = await locator.LocateAsync(path, cancellationToken);
+            if (requireRoots && !SamePath(Path.TrimEndingDirectorySeparator(Path.GetFullPath(path)), location.WorktreeRoot))
+                throw new TrackerException(Text.Get("Repository.ScanChanged"));
+            if (!locations.Any(item => SamePath(item.WorktreeRoot, location.WorktreeRoot))) locations.Add(location);
+        }
+        var results = new List<AddRepositoryResult>();
         await ChangeAsync(state =>
         {
-            var existing = state.Repositories.FirstOrDefault(repo => SamePath(repo.WorktreeRoot, location.WorktreeRoot));
-            if (existing is not null) { result = new(existing, true, false); return state; }
+            cancellationToken.ThrowIfCancellationRequested();
+            var repositories = state.Repositories.ToBuilder();
             var fellBack = groupId is not null && !state.Groups.Any(group => group.Id == groupId);
-            var name = Path.GetFileName(Path.TrimEndingDirectorySeparator(location.WorktreeRoot));
-            var repo = new TrackedRepository(Guid.NewGuid(), location.WorktreeRoot, location.GitDir, location.CommonDir,
-                string.IsNullOrEmpty(name) ? location.WorktreeRoot : name, fellBack ? null : groupId, DateTimeOffset.UtcNow);
-            result = new(repo, false, fellBack);
-            return state with { Repositories = state.Repositories.Add(repo) };
+            foreach (var location in locations)
+            {
+                var existing = repositories.FirstOrDefault(repo => SamePath(repo.WorktreeRoot, location.WorktreeRoot));
+                if (existing is not null) { results.Add(new(existing, true, false)); continue; }
+                var name = Path.GetFileName(Path.TrimEndingDirectorySeparator(location.WorktreeRoot));
+                var repo = new TrackedRepository(Guid.NewGuid(), location.WorktreeRoot, location.GitDir, location.CommonDir,
+                    string.IsNullOrEmpty(name) ? location.WorktreeRoot : name, fellBack ? null : groupId, DateTimeOffset.UtcNow);
+                repositories.Add(repo);
+                results.Add(new(repo, false, fellBack));
+            }
+            return repositories.Count == state.Repositories.Length ? state : state with { Repositories = repositories.ToImmutable() };
         }, cancellationToken);
-        return result!;
+        return results;
     }
 
     public Task MoveAsync(Guid repositoryId, Guid? groupId, CancellationToken cancellationToken = default) =>
@@ -90,6 +112,29 @@ public sealed class RepositoryRegistry(IConfigurationStore store, IRepositoryLoc
             if (groupId is not null) FindGroup(state, groupId);
             var repo = FindRepository(state, repositoryId);
             return state with { Repositories = state.Repositories.Replace(repo, repo with { GroupId = groupId }) };
+        }, cancellationToken);
+
+    public Task SetChildrenCollapsedAsync(Guid repositoryId, bool collapsed, CancellationToken cancellationToken = default) =>
+        ChangeAsync(state =>
+        {
+            var repo = FindRepository(state, repositoryId);
+            return repo.ChildrenCollapsed == collapsed ? state
+                : state with { Repositories = state.Repositories.Replace(repo, repo with { ChildrenCollapsed = collapsed }) };
+        }, cancellationToken);
+
+    public Task RevealAsync(Guid repositoryId, CancellationToken cancellationToken = default) =>
+        ChangeAsync(state =>
+        {
+            var repo = FindRepository(state, repositoryId);
+            var hierarchy = RepositoryHierarchy.Build(state.Repositories).ToDictionary(row => row.Repository.Id);
+            var ancestors = new HashSet<Guid>();
+            var row = hierarchy[repositoryId];
+            while (row.ParentId is { } parent) { ancestors.Add(parent); row = hierarchy[parent]; }
+            var repositories = state.Repositories.Select(item => ancestors.Contains(item.Id) ? item with { ChildrenCollapsed = false } : item).ToImmutableArray();
+            var groups = state.Groups.Select(group => group.Id == repo.GroupId ? group with { Collapsed = false } : group).ToImmutableArray();
+            var ungroupedCollapsed = repo.GroupId is null ? false : state.UngroupedCollapsed;
+            return repositories.SequenceEqual(state.Repositories) && groups.SequenceEqual(state.Groups) && ungroupedCollapsed == state.UngroupedCollapsed ? state
+                : state with { Repositories = repositories, Groups = groups, UngroupedCollapsed = ungroupedCollapsed };
         }, cancellationToken);
 
     public async Task RemoveAsync(Guid repositoryId, CancellationToken cancellationToken = default)

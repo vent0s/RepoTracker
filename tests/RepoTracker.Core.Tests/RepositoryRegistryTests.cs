@@ -87,6 +87,58 @@ public sealed class RepositoryRegistryTests
     }
 
     [Fact]
+    public async Task BatchImportDeduplicatesAndPreservesExistingMembershipInOneSave()
+    {
+        var group = Guid.NewGuid(); var repo = Repo(0, group);
+        var store = new MemoryStore(new() { Groups = [new(group, "工作", 0)], Repositories = [repo] });
+        var registry = await Create(store);
+        var results = await registry.AddManyAsync([repo.WorktreeRoot, @"E:\fixtures\new", @"e:\FIXTURES\NEW"], null);
+        Assert.Equal(2, results.Count);
+        Assert.True(results[0].AlreadyTracked);
+        Assert.Equal(group, results[0].Repository.GroupId);
+        Assert.False(results[1].AlreadyTracked);
+        Assert.Equal(1, store.SaveCount);
+        Assert.Equal(2, registry.State.Repositories.Length);
+    }
+
+    [Fact]
+    public async Task BatchImportDoesNotPartiallySaveIfAPathDisappearsOrSaveFails()
+    {
+        var store = new MemoryStore(new());
+        var registry = await Create(store, new Locator(path => path.EndsWith("missing")
+            ? throw new TrackerException("Missing") : Task.FromResult(new RepositoryLocation(path, path + @"\.git", path + @"\.git"))));
+        await Assert.ThrowsAsync<TrackerException>(() => registry.AddManyAsync([@"E:\fixtures\valid", @"E:\fixtures\missing"], null));
+        Assert.Empty(registry.State.Repositories); Assert.Equal(0, store.SaveCount);
+        store.Fail = true;
+        await Assert.ThrowsAsync<IOException>(() => registry.AddManyAsync([@"E:\fixtures\valid", @"E:\fixtures\child"], null));
+        Assert.Empty(registry.State.Repositories); Assert.Empty(store.State.Repositories);
+    }
+
+    [Fact]
+    public async Task BatchRejectsAChildThatNowResolvesToItsParent()
+    {
+        var store = new MemoryStore(new());
+        var registry = await Create(store, new Locator(_ => Task.FromResult(
+            new RepositoryLocation(@"E:\fixtures\parent", @"E:\fixtures\parent\.git", @"E:\fixtures\parent\.git"))));
+        await Assert.ThrowsAsync<TrackerException>(() => registry.AddManyAsync([@"E:\fixtures\parent", @"E:\fixtures\parent\child"], null));
+        Assert.Empty(registry.State.Repositories); Assert.Equal(0, store.SaveCount);
+    }
+
+    [Fact]
+    public async Task CanceledBatchPublishesNothing()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var store = new MemoryStore(new());
+        var registry = await Create(store, new Locator(path =>
+        {
+            cancellation.Cancel();
+            return Task.FromResult(new RepositoryLocation(path, path + @"\.git", path + @"\.git"));
+        }));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => registry.AddManyAsync([@"E:\fixtures\valid"], null, cancellation.Token));
+        Assert.Empty(registry.State.Repositories); Assert.Equal(0, store.SaveCount);
+    }
+
+    [Fact]
     public async Task UndoPreservesIdAndFallsBackWhenOriginalGroupIsGone()
     {
         var group = Guid.NewGuid(); var repo = Repo(1, group);
@@ -147,6 +199,30 @@ public sealed class RepositoryRegistryTests
 
     private static TrackedRepository Repo(int number, Guid? group) => new(Guid.NewGuid(), @"E:\fixtures\repo" + number,
         @"E:\fixtures\repo" + number + @"\.git", @"E:\fixtures\repo" + number + @"\.git", "repo" + number, group, DateTimeOffset.UnixEpoch);
+
+    [Fact]
+    public async Task RevealExpandsAncestorsAndGroupAtomicallyAndFailedCollapsePreservesState()
+    {
+        var store = new MemoryStore(new()); var registry = await Create(store);
+        var group = await registry.CreateGroupAsync("Nested");
+        var root = (await registry.AddAsync(@"E:\root", group)).Repository;
+        var child = (await registry.AddAsync(@"E:\root\child", group)).Repository;
+        var grandchild = (await registry.AddAsync(@"E:\root\child\deep", group)).Repository;
+        await registry.SetChildrenCollapsedAsync(root.Id, true);
+        await registry.SetChildrenCollapsedAsync(child.Id, true);
+        await registry.SetCollapsedAsync(group, true);
+        var saves = store.SaveCount;
+        await registry.RevealAsync(grandchild.Id);
+        Assert.Equal(saves + 1, store.SaveCount);
+        Assert.All(registry.State.Repositories, repo => Assert.False(repo.ChildrenCollapsed));
+        Assert.False(registry.State.Groups[0].Collapsed);
+        await registry.RevealAsync(grandchild.Id);
+        Assert.Equal(saves + 1, store.SaveCount);
+        var before = registry.State;
+        store.Fail = true;
+        await Assert.ThrowsAsync<IOException>(() => registry.SetChildrenCollapsedAsync(root.Id, true));
+        Assert.Same(before, registry.State);
+    }
     private static async Task<RepositoryRegistry> Create(MemoryStore store, Locator? locator = null)
     {
         var registry = new RepositoryRegistry(store, locator ?? new Locator(), new Folders());
@@ -161,6 +237,7 @@ public sealed class RepositoryRegistryTests
     private sealed class MemoryStore(TrackerState initial) : IConfigurationStore
     {
         private int revision;
+        public int SaveCount => revision;
         public TrackerState State = initial;
         public bool Fail;
         public Task<ConfigurationSnapshot> LoadAsync(CancellationToken cancellationToken = default) => Task.FromResult(new ConfigurationSnapshot(State, revision.ToString()));

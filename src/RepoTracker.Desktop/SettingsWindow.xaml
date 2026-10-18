@@ -52,6 +52,7 @@
           <CheckBox x:Name="KeepSwitch" Content="{l10n:Text Window.Keep}" IsChecked="{Binding KeepExpanded, Mode=OneWay}" Click="ToggleKeep" AutomationProperties.AutomationId="KeepSwitch" />
           <CheckBox x:Name="StartupSwitch" Content="{l10n:Text Startup.Toggle}" Margin="0,12,0,0" Click="ToggleStartup" AutomationProperties.AutomationId="StartupSwitch" />
           <TextBlock Text="{l10n:Text Startup.Help}" TextWrapping="Wrap" Foreground="{DynamicResource DimBrush}" FontSize="12" Margin="0,10,0,8" />
+          <TextBlock Text="{l10n:Text Tray.Help}" TextWrapping="Wrap" Foreground="{DynamicResource DimBrush}" FontSize="12" Margin="0,4,0,8" AutomationProperties.AutomationId="TrayHelp" />
         </StackPanel></ScrollViewer>
       </TabItem>
       <TabItem Header="{l10n:Text Source.Tab}" AutomationProperties.AutomationId="SourcesTab">

@@ -40,6 +40,16 @@ internal static class Program
 
     private static int Run(string[] args)
     {
+        if (args.Length == 3 && args[0] == "--scan-repositories")
+        {
+            var timer = Stopwatch.StartNew();
+            var scanner = new RepoTracker.Infrastructure.Git.NestedRepositoryScanner(
+                new RepoTracker.Infrastructure.Git.GitRepositoryLocator(new RepoTracker.Infrastructure.Git.GitProcess()));
+            var result = scanner.ScanAsync(args[1]).GetAwaiter().GetResult();
+            File.WriteAllText(args[2], JsonSerializer.Serialize(new { Result = result, ElapsedMilliseconds = timer.ElapsedMilliseconds },
+                new JsonSerializerOptions { WriteIndented = true }));
+            return 0;
+        }
         if (args.Length == 4 && args[0] == "--package-probe")
             // External UI Automation needs a background MTA thread, not this WPF STA entry point.
             return Task.Run(() => PackageProbe.Run(args[1], args[2], args[3])).GetAwaiter().GetResult();
@@ -50,6 +60,8 @@ internal static class Program
         // Existing scenario assertions use Chinese; language scenarios explicitly override the display culture.
         System.Globalization.CultureInfo.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo(
             Environment.GetEnvironmentVariable("REPOTRACKER_TEST_SYSTEM_LANGUAGE") ?? "zh-CN");
+        if (args.Length == 5 && args[0] == "--tray-menu")
+            return Task.Run(() => WindowProbe.DriveTrayMenu(int.Parse(args[1]), nint.Parse(args[2]), args[3], bool.Parse(args[4]))).GetAwaiter().GetResult();
         if (args.Length == 2 && args[0] == "--foreign-window")
         {
             var app = new Application();
@@ -106,6 +118,19 @@ internal sealed partial class WindowProbe(App application, string outputDirector
         try
         {
             await panel.Initialization;
+            if (Environment.GetEnvironmentVariable("REPOTRACKER_TEST_NESTED") is not null)
+            {
+                await CheckNestedRepositories(panel);
+                application.Shutdown();
+                return;
+            }
+            if (Environment.GetEnvironmentVariable("REPOTRACKER_TEST_TRAY") == "1")
+            {
+                application.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                await CheckTray(panel);
+                application.Shutdown();
+                return;
+            }
             if (Environment.GetEnvironmentVariable("REPOTRACKER_TEST_LANGUAGE") is not null)
             {
                 await CheckLanguage(panel);

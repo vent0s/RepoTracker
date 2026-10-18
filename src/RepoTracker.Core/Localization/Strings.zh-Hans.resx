@@ -19,7 +19,7 @@
   <data name="Action.Create" xml:space="preserve"><value>创建</value></data>
   <data name="Group.Created" xml:space="preserve"><value>已创建分组。</value></data>
   <data name="Repository.Add" xml:space="preserve"><value>添加仓库</value></data>
-  <data name="Repository.AddDescription" xml:space="preserve"><value>选择仓库目录或其中的子目录。只记录工作树位置，不移动或修改仓库文件。</value></data>
+  <data name="Repository.AddDescription" xml:space="preserve"><value>选择仓库目录或其中的子目录。“添加”默认查找子仓库，发现后可勾选导入；取消下方勾选则只添加当前仓库。</value></data>
   <data name="Repository.Folder" xml:space="preserve"><value>仓库目录</value></data>
   <data name="Action.Add" xml:space="preserve"><value>添加</value></data>
   <data name="Repository.Duplicate" xml:space="preserve"><value>该工作树已在跟踪列表中，已定位到对应仓库。</value></data>
@@ -113,7 +113,9 @@
   <data name="Remote.Help" xml:space="preserve"><value>优先检查 origin，否则按名称选择第一个 remote。仅支持标准 HTTPS / SSH 与受控 fetch 映射；认证失败时不会弹出登录窗口。请先在应用外配置 Git Credential Manager 或 SSH。</value></data>
   <data name="Remote.Refresh" xml:space="preserve"><value>立即检查远程</value></data>
   <data name="Startup.Toggle" xml:space="preserve"><value>登录 Windows 时启动</value></data>
-  <data name="Startup.Help" xml:space="preserve"><value>自动保存。登录启动时收起到任务栏，点击任务栏图标展开。固定图标请使用 Windows 的应用菜单。</value></data>
+  <data name="Startup.Help" xml:space="preserve"><value>默认关闭，需在每台电脑上单独开启，修改自动保存。登录启动时收起到任务栏，可点击任务栏或托盘图标展开。移动程序目录后需重新开启。</value></data>
+  <data name="Tray.Open" xml:space="preserve"><value>打开 RepoTracker</value></data>
+  <data name="Tray.Help" xml:space="preserve"><value>运行时托盘图标常驻，右键可打开设置或退出。若图标在右下角的小箭头内，可将它拖到外面，或在 Windows 任务栏设置中开启显示；是否收纳由 Windows 管理。</value></data>
   <data name="Source.Tab" xml:space="preserve"><value>来源规则</value></data>
   <data name="Source.PriorityHint" xml:space="preserve"><value>精确域名优先；通配规则取最长后缀。规则只影响显示。</value></data>
   <data name="Action.New" xml:space="preserve"><value>新增</value></data>
@@ -258,4 +260,27 @@
   <data name="Status.AutoSave" xml:space="preserve"><value>仓库与分组自动保存 · 每 {0} 秒检查本地状态</value></data>
   <data name="Source.NoMatch" xml:space="preserve"><value>{0} · 未命中规则</value></data>
   <data name="Source.Match" xml:space="preserve"><value>{0} → {1} · 精确优先，其次最长域名后缀</value></data>
+  <data name="Repository.ScanTitle" xml:space="preserve"><value>发现子仓库</value></data>
+  <data name="Repository.ScanAction" xml:space="preserve"><value>扫描并选择子仓库…</value></data>
+  <data name="Repository.ScanHint" xml:space="preserve"><value>仅扫描此仓库目录下的仓库，勾选后分别跟踪。跳过 Git 元数据、目录链接和未初始化的子模块，不执行获取或拉取。</value></data>
+  <data name="Repository.Scanning" xml:space="preserve"><value>正在扫描… 可随时取消。</value></data>
+  <data name="Repository.ScanSummary" xml:space="preserve"><value>在 {1} 个目录中发现 {0} 个仓库。</value></data>
+  <data name="Repository.ScanLimited" xml:space="preserve"><value>已达扫描上限（50,000 个目录或 500 个仓库）。结果不完整，可选择更小的子仓库继续扫描。</value></data>
+  <data name="Repository.ScanLinks" xml:space="preserve"><value>已跳过 {0} 个目录链接或联接。</value></data>
+  <data name="Repository.ScanIssues" xml:space="preserve"><value>有 {0} 处无法完整扫描，以下最多显示 20 条详情。</value></data>
+  <data name="Repository.ScanFailed" xml:space="preserve"><value>未能扫描此仓库。</value></data>
+  <data name="Repository.ScanSelected" xml:space="preserve"><value>已选 {0} 个</value></data>
+  <data name="Repository.ScanRoot" xml:space="preserve"><value>父仓库</value></data>
+  <data name="Repository.ScanTracked" xml:space="preserve"><value>已跟踪</value></data>
+  <data name="Repository.ImportSelected" xml:space="preserve"><value>导入所选仓库</value></data>
+  <data name="Repository.Imported" xml:space="preserve"><value>已导入 {0} 个仓库。</value></data>
+  <data name="Repository.ScanOutside" xml:space="preserve"><value>Git 将此目录解析为其他工作树，已跳过。</value></data>
+  <data name="Repository.ScanChanged" xml:space="preserve"><value>所选仓库已不再是原来的工作树根目录。请关闭预览后重新扫描；本次没有导入任何仓库。</value></data>
+  <data name="Repository.ChildrenCount" xml:space="preserve"><value>{0} 个子仓库</value></data>
+  <data name="Repository.ExpandChildren" xml:space="preserve"><value>展开 {0} 的 {1} 个子仓库</value></data>
+  <data name="Repository.CollapseChildren" xml:space="preserve"><value>收起 {0} 的 {1} 个子仓库</value></data>
+  <data name="Repository.ExpansionSaved" xml:space="preserve"><value>已保存仓库展开状态。</value></data>
+  <data name="Repository.ScanOnAdd" xml:space="preserve"><value>同时查找子仓库</value></data>
+  <data name="Repository.ScanProgress" xml:space="preserve"><value>正在扫描：已检查 {0} 个目录，发现 {1} 个仓库…</value></data>
+  <data name="Repository.ScanTimeLimit" xml:space="preserve"><value>已达到扫描时间上限（约 30 秒），可先导入已发现的仓库。结果可能不完整，可从较小的子仓库继续扫描。</value></data>
 </root>

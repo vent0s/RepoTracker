@@ -19,7 +19,7 @@
   <data name="Action.Create" xml:space="preserve"><value>Create</value></data>
   <data name="Group.Created" xml:space="preserve"><value>Group created.</value></data>
   <data name="Repository.Add" xml:space="preserve"><value>Add repository</value></data>
-  <data name="Repository.AddDescription" xml:space="preserve"><value>Choose a repository folder or a subfolder. Only its worktree location is recorded; repository files are unchanged.</value></data>
+  <data name="Repository.AddDescription" xml:space="preserve"><value>Choose a repository folder or a subfolder. Add looks for nested repositories by default and lets you select which to import. Uncheck the option below to add only this repository.</value></data>
   <data name="Repository.Folder" xml:space="preserve"><value>Repository folder</value></data>
   <data name="Action.Add" xml:space="preserve"><value>Add</value></data>
   <data name="Repository.Duplicate" xml:space="preserve"><value>This worktree is already tracked. Its entry has been selected.</value></data>
@@ -113,7 +113,9 @@
   <data name="Remote.Help" xml:space="preserve"><value>Checks origin first, otherwise the first remote by name. Supports standard HTTPS / SSH and constrained fetch mappings. No sign-in dialog appears on authentication failure. Configure Git Credential Manager or SSH outside the app first.</value></data>
   <data name="Remote.Refresh" xml:space="preserve"><value>Check remotes now</value></data>
   <data name="Startup.Toggle" xml:space="preserve"><value>Start when I sign in to Windows</value></data>
-  <data name="Startup.Help" xml:space="preserve"><value>Saved automatically. Starts minimized at sign-in; select its taskbar icon to open. Pin the icon using the Windows app menu.</value></data>
+  <data name="Startup.Help" xml:space="preserve"><value>Off by default; enable separately on each computer. Saved automatically. Starts minimized at sign-in; select its taskbar or tray icon to open. Enable again after moving the application folder.</value></data>
+  <data name="Tray.Open" xml:space="preserve"><value>Open RepoTracker</value></data>
+  <data name="Tray.Help" xml:space="preserve"><value>The tray icon remains available while running. Right-click for settings or exit. If hidden under the corner arrow, drag it out or enable it in Windows taskbar settings. Windows controls which icons are hidden.</value></data>
   <data name="Source.Tab" xml:space="preserve"><value>Source rules</value></data>
   <data name="Source.PriorityHint" xml:space="preserve"><value>Exact hosts take priority; wildcards use the longest suffix. Rules only affect display.</value></data>
   <data name="Action.New" xml:space="preserve"><value>New</value></data>
@@ -258,4 +260,27 @@ Known upstream: {2}
   <data name="Status.AutoSave" xml:space="preserve"><value>Repositories and groups saved automatically · Local checks every {0} sec</value></data>
   <data name="Source.NoMatch" xml:space="preserve"><value>{0} · No matching rule</value></data>
   <data name="Source.Match" xml:space="preserve"><value>{0} → {1} · Exact match first, then longest host suffix</value></data>
+  <data name="Repository.ScanTitle" xml:space="preserve"><value>Discover nested repositories</value></data>
+  <data name="Repository.ScanAction" xml:space="preserve"><value>Scan and select nested repositories…</value></data>
+  <data name="Repository.ScanHint" xml:space="preserve"><value>Scan only beneath this repository. Each selected repository is tracked separately. Git metadata, directory links and uninitialized submodules are skipped. No fetch or pull is performed.</value></data>
+  <data name="Repository.Scanning" xml:space="preserve"><value>Scanning… You can cancel at any time.</value></data>
+  <data name="Repository.ScanSummary" xml:space="preserve"><value>Found {0} repositories in {1} directories.</value></data>
+  <data name="Repository.ScanLimited" xml:space="preserve"><value>Scan limit reached (50,000 directories or 500 repositories). Results are incomplete; scan a smaller repository subtree to continue.</value></data>
+  <data name="Repository.ScanLinks" xml:space="preserve"><value>Skipped {0} directory links or junctions.</value></data>
+  <data name="Repository.ScanIssues" xml:space="preserve"><value>Could not fully scan {0} locations. Up to 20 details follow.</value></data>
+  <data name="Repository.ScanFailed" xml:space="preserve"><value>Could not scan this repository.</value></data>
+  <data name="Repository.ScanSelected" xml:space="preserve"><value>{0} selected</value></data>
+  <data name="Repository.ScanRoot" xml:space="preserve"><value>Parent repository</value></data>
+  <data name="Repository.ScanTracked" xml:space="preserve"><value>Already tracked</value></data>
+  <data name="Repository.ImportSelected" xml:space="preserve"><value>Import selected</value></data>
+  <data name="Repository.Imported" xml:space="preserve"><value>Imported {0} repositories.</value></data>
+  <data name="Repository.ScanOutside" xml:space="preserve"><value>Git resolved this folder to a different worktree; skipped.</value></data>
+  <data name="Repository.ScanChanged" xml:space="preserve"><value>A selected repository is no longer the same worktree root. Close this preview and scan again; nothing was imported.</value></data>
+  <data name="Repository.ChildrenCount" xml:space="preserve"><value>Nested repositories: {0}</value></data>
+  <data name="Repository.ExpandChildren" xml:space="preserve"><value>Expand {0} ({1} nested repositories)</value></data>
+  <data name="Repository.CollapseChildren" xml:space="preserve"><value>Collapse {0} ({1} nested repositories)</value></data>
+  <data name="Repository.ExpansionSaved" xml:space="preserve"><value>Repository expansion saved.</value></data>
+  <data name="Repository.ScanOnAdd" xml:space="preserve"><value>Also look for nested repositories</value></data>
+  <data name="Repository.ScanProgress" xml:space="preserve"><value>Scanning: {0} directories checked, {1} repositories found…</value></data>
+  <data name="Repository.ScanTimeLimit" xml:space="preserve"><value>The scan reached its time limit (about 30 seconds). You can import the repositories found so far. Results may be incomplete; scan a smaller nested repository to continue.</value></data>
 </root>

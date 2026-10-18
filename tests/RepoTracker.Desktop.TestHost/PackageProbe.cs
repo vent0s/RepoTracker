@@ -4,8 +4,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows.Automation;
-using RepoTracker.Core.Tracking;
-using RepoTracker.Infrastructure.Configuration;
 using RepoTracker.Tests.Shared;
 
 namespace RepoTracker.Desktop.TestHost;
@@ -28,6 +26,7 @@ internal static class PackageProbe
             Require(!Directory.Exists(profile), "Package probe requires a new isolated profile.");
             child = Start(originalExe, profile);
             var panel = Panel(child);
+            WaitForTrayEvent(profile, "tray.registered", 1);
             var expected = RepoTracker.Core.Localization.Text.ResolveCulture("system", CultureInfo.CurrentUICulture).Name == "zh-Hans" ? "窗口设置" : "Settings";
             var actualName = ById(panel, "Settings").Current.Name;
             Require(actualName == expected, $"First launch language: expected '{expected}', got '{actualName}'.");
@@ -41,23 +40,48 @@ internal static class PackageProbe
             Require(ReadState(statePath).GetProperty("preferences").GetProperty("language").GetString() == "system", "Default language was not persisted as system.");
             SaveLanguage(child, panel, "English", "en", statePath);
             Stop(child); child.Dispose(); child = null;
+            WaitForTrayEvent(profile, "tray.removed", 1);
             checks.Add("Fresh extracted apphost: system display language, external profile/log creation, UI save and graceful exit.");
 
-            // Seed only this closed test profile, then verify the bundled runtime performs real Git collection.
+            // Import through the real published Add command, then verify the bundled runtime performs real Git collection.
             var fixture = new TestWorkspace(Path.Combine(evidenceDirectory, "repositories"));
             var repository = fixture.CreateDetachedRepositoryAsync("发布 fixture").GetAwaiter().GetResult();
+            var nested = fixture.CreateDetachedRepositoryAsync(Path.Combine("发布 fixture", "子仓库 nested")).GetAwaiter().GetResult();
+            var nestedHead = File.ReadAllText(Path.Combine(nested, ".git", "HEAD"));
+            var nestedKeep = File.ReadAllBytes(Path.Combine(nested, "keep.txt"));
             var head = File.ReadAllText(Path.Combine(repository, ".git", "HEAD"));
             var keep = File.ReadAllBytes(Path.Combine(repository, "keep.txt"));
-            var store = new JsonConfigurationStore(profile);
-            var snapshot = store.LoadAsync().GetAwaiter().GetResult();
-            store.SaveAsync(snapshot.State with { Repositories = [new TrackedRepository(Guid.NewGuid(), repository,
-                Path.Combine(repository, ".git"), Path.Combine(repository, ".git"), "发布 fixture", null, DateTimeOffset.UtcNow)] },
-                snapshot.Revision).GetAwaiter().GetResult();
-
             child = Start(originalExe, profile);
             panel = Panel(child);
+            WaitForTrayEvent(profile, "tray.registered", 2);
             Require(ById(panel, "Settings").Current.Name == "Settings", "Saved English override was not loaded.");
+            Phase("Add repository through the published window");
+            Invoke(ById(panel, "ChooseFolder"));
+            var entry = OwnedDialog(panel, "EntryDialog");
+            Require(((TogglePattern)ById(entry, "ScanChildrenOnAdd").GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState == ToggleState.On,
+                "Packaged Add did not enable child discovery by default.");
+            ((ValuePattern)ById(entry, "EntryText").GetCurrentPattern(ValuePattern.Pattern)).SetValue(repository);
+            Invoke(ById(entry, "Submit"));
+            var discovery = OwnedDialog(entry, "RepositoryDiscovery");
+            Wait(() => ById(discovery, "ImportRepositories").Current.IsEnabled, "Packaged default nested scan");
+            Require(discovery.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.AutomationIdProperty, "SelectRepository")).Count == 2,
+                "Packaged discovery did not find root and child.");
+            Invoke(ById(discovery, "ImportRepositories"));
+            Wait(() => panel.Current.IsEnabled && ReadState(statePath).GetProperty("repositories").GetArrayLength() == 2,
+                "Packaged parent and child imported through Add");
+            checks.Add("Published Add defaults to child discovery; root and nested repository selected and imported through the real preview window.");
             Wait(() => HasText(panel, "Detached HEAD") && HasText(panel, "Modified") && HasText(panel, "发布 fixture"), "Packaged real Git status");
+            Require(HasText(panel, "子仓库 nested"), "Packaged new child was not visible.");
+            Invoke(ById(panel, "ToggleRepositoryChildren"));
+            Wait(() => !HasText(panel, "子仓库 nested") && ReadState(statePath).GetProperty("repositories")[0].GetProperty("childrenCollapsed").GetBoolean(),
+                "Packaged initial collapse saved");
+            Invoke(ById(panel, "ToggleRepositoryChildren"));
+            Wait(() => HasText(panel, "子仓库 nested") && !ReadState(statePath).GetProperty("repositories")[0].GetProperty("childrenCollapsed").GetBoolean(),
+                "Packaged tree expanded and saved");
+            Invoke(ById(panel, "ToggleRepositoryChildren"));
+            Wait(() => !HasText(panel, "子仓库 nested") && ReadState(statePath).GetProperty("repositories")[0].GetProperty("childrenCollapsed").GetBoolean(),
+                "Packaged tree collapsed and saved");
+            checks.Add("Published nested repository tree: stored collapsed state, real expand/collapse UI commands, child visibility and atomic persistence.");
             using (var secondary = Start(originalExe, profile, minimized: true))
             {
                 Require(secondary.WaitForExit(10000) && secondary.ExitCode == 0 && !child.HasExited,
@@ -65,23 +89,30 @@ internal static class PackageProbe
             }
             SaveLanguage(child, panel, "简体中文", "zh-Hans", statePath);
             Stop(child); child.Dispose(); child = null;
+            WaitForTrayEvent(profile, "tray.removed", 2);
             checks.Add("Restart: English resources, preserved settings, same-profile single instance, Chinese override saved through UI.");
 
             var before = File.ReadAllBytes(statePath);
             child = Start(relocatedExe, profile, minimized: true);
             // Wait for a real top-level window before checking the startup state.
             var minimizedPanel = FindPanel(child);
+            WaitForTrayEvent(profile, "tray.registered", 3);
             Require(((WindowPattern)minimizedPanel.GetCurrentPattern(WindowPattern.Pattern)).Current.WindowVisualState == WindowVisualState.Minimized,
                 "Packaged --minimized startup did not remain minimized.");
             panel = Panel(child);
             Require(ById(panel, "Settings").Current.Name == "窗口设置", "Chinese satellite resources were not loaded after relocation.");
             Wait(() => HasText(panel, "分离 HEAD") && HasText(panel, "有修改") && HasText(panel, "发布 fixture"), "Relocated Chinese Git status");
+            Require(!HasText(panel, "子仓库 nested"), "Relocation lost nested collapse state.");
             CheckModules(child, relocatedExe, modules);
             Stop(child); child.Dispose(); child = null;
+            WaitForTrayEvent(profile, "tray.removed", 3);
+            checks.Add("Published Shell registration succeeded on fresh, restarted and relocated minimized launches; each graceful exit removed its tray icon.");
             Require(before.SequenceEqual(File.ReadAllBytes(statePath)), "Relocation/restart modified existing preferences.");
             Require(File.Exists(statePath + ".bak"), "Atomic saves did not retain the configuration backup.");
             Require(head == File.ReadAllText(Path.Combine(repository, ".git", "HEAD")) &&
                 keep.SequenceEqual(File.ReadAllBytes(Path.Combine(repository, "keep.txt"))), "Packaged collection changed the fixture.");
+            Require(nestedHead == File.ReadAllText(Path.Combine(nested, ".git", "HEAD")) &&
+                nestedKeep.SequenceEqual(File.ReadAllBytes(Path.Combine(nested, "keep.txt"))), "Packaged collection changed the child fixture.");
             Require(string.IsNullOrWhiteSpace(TestWorkspace.GitAsync(repository, "for-each-ref", "--format=%(refname)", "refs/heads").GetAwaiter().GetResult()),
                 "Fixture unexpectedly acquired a named branch.");
             checks.Add("Real Git detached fixture: English and Chinese status after restart/relocation; user name and file/HEAD unchanged; no named branch created.");
@@ -105,6 +136,15 @@ internal static class PackageProbe
                 SystemDisplayCulture = CultureInfo.CurrentUICulture.Name, Profile = profile,
                 Scope = "Real published process; no user Run registry changes or Windows logon performed." }, new JsonSerializerOptions { WriteIndented = true }));
     }
+
+    private static void WaitForTrayEvent(string profile, string eventName, int count) => Wait(() =>
+        Directory.GetFiles(Path.Combine(profile, "logs"), "*.log")
+            .Sum(path =>
+            {
+                using var reader = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete));
+                return reader.ReadToEnd().Split('\n').Count(line => line.TrimEnd('\r').EndsWith(" " + eventName, StringComparison.Ordinal));
+            }) >= count,
+        "Published " + eventName);
 
     private static Process Start(string executable, string profile, bool minimized = false)
     {
@@ -141,6 +181,19 @@ internal static class PackageProbe
         SetForegroundWindow(panel.Current.NativeWindowHandle);
         Wait(() => FindById(panel, "Settings") is { Current.IsEnabled: true }, "Initialized main window");
         return panel;
+    }
+
+    private static AutomationElement OwnedDialog(AutomationElement parent, string id)
+    {
+        AutomationElement? dialog = null;
+        Wait(() =>
+        {
+            var owner = (nint)parent.Current.NativeWindowHandle;
+            var popup = GetWindow(owner, 6);
+            dialog = popup == 0 || popup == owner ? null : AutomationElement.FromHandle(popup);
+            return dialog?.Current.AutomationId == id;
+        }, id);
+        return dialog!;
     }
 
     private static void SaveLanguage(Process process, AutomationElement panel, string choice, string code, string statePath)

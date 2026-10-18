@@ -17,6 +17,7 @@ public partial class App : Application
     private SessionLog? log;
     private LocalStatusScheduler? scheduler;
     private RemoteScheduler? remoteScheduler;
+    internal TrayIcon? TrayIcon { get; private set; }
     public Func<string, IStartupRegistration>? StartupRegistrationFactory { get; init; }
 
     protected override async void OnStartup(StartupEventArgs e)
@@ -62,6 +63,7 @@ public partial class App : Application
             }));
             if (options.Minimized) { window.ShowActivated = false; window.WindowState = WindowState.Minimized; }
             window.Show();
+            TrayIcon = new TrayIcon(window, log);
             log.Write("application.started");
         }
         catch (Exception error) when (error is ArgumentException or IOException or UnauthorizedAccessException)
@@ -75,6 +77,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        TrayIcon?.Dispose();
         remoteScheduler?.DisposeAsync().AsTask().GetAwaiter().GetResult();
         scheduler?.DisposeAsync().AsTask().GetAwaiter().GetResult();
         instance?.Dispose();

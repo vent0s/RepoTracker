@@ -11,6 +11,22 @@ namespace RepoTracker.Desktop.ViewModels;
 public sealed class RepositoryRow(TrackedRepository repository) : ObservableObject
 {
     public TrackedRepository Repository { get; set; } = repository;
+    public Guid? ParentId { get; private set; }
+    public int Depth { get; private set; }
+    public int DescendantCount { get; private set; }
+    public string DisplayPath { get; private set; } = repository.DisplayName;
+    public bool HasChildren => DescendantCount > 0;
+    public bool IsExpanded => !Repository.ChildrenCollapsed;
+    public string ExpansionGlyph => IsExpanded ? "\uE70D" : "\uE76C";
+    public string ChildrenText => HasChildren ? Text.Format("Repository.ChildrenCount", DescendantCount) : "";
+    public string ExpansionAccessibleName => Text.Format(IsExpanded ? "Repository.CollapseChildren" : "Repository.ExpandChildren", Name, DescendantCount);
+    public System.Windows.Thickness TreePadding => new(6 + Depth * 16, 0, 22, 0);
+    public void ApplyHierarchy(RepositoryTreeRow row)
+    {
+        ParentId = row.ParentId; Depth = row.Depth; DescendantCount = row.DescendantCount; DisplayPath = row.DisplayPath;
+        foreach (var property in new[] { nameof(ParentId), nameof(Depth), nameof(DescendantCount), nameof(DisplayPath), nameof(HasChildren),
+            nameof(IsExpanded), nameof(ExpansionGlyph), nameof(ChildrenText), nameof(ExpansionAccessibleName), nameof(TreePadding) }) Notify(property);
+    }
     private bool highlighted;
     public bool IsHighlighted { get => highlighted; set => Set(ref highlighted, value); }
     public StatusSnapshot Status { get; private set; } = new();
@@ -81,6 +97,7 @@ public sealed class RepositoryRow(TrackedRepository repository) : ObservableObje
 public sealed record GroupRow(Guid? Id, string Name, bool IsExpanded, IReadOnlyList<RepositoryRow> Repositories)
 {
     public bool CanManage => Id is not null;
+    public IReadOnlyList<RepositoryRow> VisibleRepositories { get; init; } = Repositories;
 }
 public sealed record GroupChoice(Guid? Id, string Name);
 
@@ -104,6 +121,7 @@ public sealed class ShellViewModel : ObservableObject
     public bool CanEdit => Registry.CanWrite && !IsBusy;
     public bool CanUndo => Registry.CanUndo && !IsBusy;
     public int RepositoryCount => Registry.State.Repositories.Length;
+    public double RepositoryListMinWidth => 620 + (rows.Count == 0 ? 0 : rows.Values.Max(row => row.Depth)) * 16;
     public bool RemoteEnabled => Registry.State.RemoteEnabled;
     public string RemoteSummary => RemoteEnabled ? Text.Format("Remote.EnabledSummary", Registry.State.Preferences.RemoteIntervalMinutes) : Text.Get("Remote.DisabledSummary");
     public string LocalCheckSummary
@@ -160,12 +178,19 @@ public sealed class ShellViewModel : ObservableObject
             if (!rows.TryGetValue(repo.Id, out var row)) rows.Add(repo.Id, row = new(repo));
             row.Repository = repo; row.IsHighlighted = repo.Id == highlightedId;
         }
-        Groups = state.Groups.Select(group => new GroupRow(group.Id, group.Name, !group.Collapsed,
-                state.Repositories.Where(repo => repo.GroupId == group.Id).Select(repo => rows[repo.Id]).ToArray()))
-            .Append(new(null, Text.Get("Group.Ungrouped"), !state.UngroupedCollapsed,
-                state.Repositories.Where(repo => repo.GroupId is null).Select(repo => rows[repo.Id]).ToArray())).ToArray();
+        GroupRow Group(Guid? id, string name, bool expanded)
+        {
+            var members = state.Repositories.Where(repo => repo.GroupId == id).ToArray();
+            var hierarchy = RepositoryHierarchy.Build(members);
+            foreach (var item in hierarchy) rows[item.Repository.Id].ApplyHierarchy(item);
+            return new(id, name, expanded, members.Select(repo => rows[repo.Id]).ToArray())
+            { VisibleRepositories = hierarchy.Where(item => item.IsVisible).Select(item => rows[item.Repository.Id]).ToArray() };
+        }
+        Groups = state.Groups.Select(group => Group(group.Id, group.Name, !group.Collapsed))
+            .Append(Group(null, Text.Get("Group.Ungrouped"), !state.UngroupedCollapsed)).ToArray();
         RefreshStatuses();
         Notify(nameof(RepositoryCount)); Notify(nameof(GroupChoices)); Notify(nameof(CanEdit)); Notify(nameof(CanUndo));
+        Notify(nameof(RepositoryListMinWidth));
         CommandManager.InvalidateRequerySuggested();
     }
 
