@@ -19,7 +19,11 @@
   <data name="Action.Create" xml:space="preserve"><value>Create</value></data>
   <data name="Group.Created" xml:space="preserve"><value>Group created.</value></data>
   <data name="Repository.Add" xml:space="preserve"><value>Add repository</value></data>
-  <data name="Repository.AddDescription" xml:space="preserve"><value>Choose a repository folder or a subfolder. Add looks for nested repositories by default and lets you select which to import. Uncheck the option below to add only this repository.</value></data>
+  <data name="Repository.AddDescription" xml:space="preserve"><value>Enter or browse to a repository folder. Only that repository is added; duplicates select the existing entry. To add a nested repository, use “Add nested repository…” in a repository's menu.</value></data>
+  <data name="Repository.AddChild" xml:space="preserve"><value>Add nested repository</value></data>
+  <data name="Repository.AddChildAction" xml:space="preserve"><value>Add nested repository…</value></data>
+  <data name="Repository.AddChildDescription" xml:space="preserve"><value>Choose an independent Git worktree inside the folder below, using its full path. New entries use the parent's group; duplicates select the existing entry.&#10;Parent: {0}</value></data>
+  <data name="Repository.InvalidChild" xml:space="preserve"><value>Choose an independent Git worktree inside the parent repository. The parent itself, ordinary subfolders and repositories elsewhere cannot be added as its nested repository.</value></data>
   <data name="Repository.Folder" xml:space="preserve"><value>Repository folder</value></data>
   <data name="Action.Add" xml:space="preserve"><value>Add</value></data>
   <data name="Repository.Duplicate" xml:space="preserve"><value>This worktree is already tracked. Its entry has been selected.</value></data>
@@ -39,7 +43,7 @@
   <data name="Repository.RemoveTitle" xml:space="preserve"><value>Stop tracking repository</value></data>
   <data name="Repository.Remove" xml:space="preserve"><value>Stop tracking</value></data>
   <data name="Repository.Removed" xml:space="preserve"><value>Tracking stopped. Select Undo removal to restore it.</value></data>
-  <data name="App.AlreadyRunning" xml:space="preserve"><value>RepoTracker is already running but its window could not be activated. Open it from the taskbar and check that both processes have the same permissions.</value></data>
+  <data name="App.AlreadyRunning" xml:space="preserve"><value>RepoTracker is already running but its window could not be activated. Open it from the notification tray and check that both processes have the same permissions.</value></data>
   <data name="App.StartFailed" xml:space="preserve"><value>Cannot start RepoTracker. Check the startup arguments and user folder permissions.</value></data>
   <data name="Repository.Open" xml:space="preserve"><value>Open folder</value></data>
   <data name="Repository.ActionsHint" xml:space="preserve"><value>Move to group / Stop tracking</value></data>
@@ -54,9 +58,9 @@
   <data name="Settings.Hint" xml:space="preserve"><value>Settings (Ctrl+,)</value></data>
   <data name="Settings.Window" xml:space="preserve"><value>Settings</value></data>
   <data name="Action.More" xml:space="preserve"><value>More</value></data>
-  <data name="Window.Collapse" xml:space="preserve"><value>Minimize to taskbar</value></data>
+  <data name="Window.Collapse" xml:space="preserve"><value>Hide to tray</value></data>
   <data name="App.Exit" xml:space="preserve"><value>Exit RepoTracker</value></data>
-  <data name="Window.CollapseHint" xml:space="preserve"><value>Minimize to taskbar (Esc)</value></data>
+  <data name="Window.CollapseHint" xml:space="preserve"><value>Hide to tray (Esc)</value></data>
   <data name="Repository.Undo" xml:space="preserve"><value>Undo removal</value></data>
   <data name="Group.Heading" xml:space="preserve"><value>Repository groups</value></data>
   <data name="Group.NewButton" xml:space="preserve"><value>＋ New group</value></data>
@@ -64,7 +68,21 @@
   <data name="Group.FinishManaging" xml:space="preserve"><value>Done</value></data>
   <data name="Repository.PathColumn" xml:space="preserve"><value>Repository / Path</value></data>
   <data name="Status.Branch" xml:space="preserve"><value>Branch</value></data>
-  <data name="Status.WorktreeColumn" xml:space="preserve"><value>Worktree / Known upstream</value></data>
+  <data name="Status.WorktreeColumn" xml:space="preserve"><value>● Modified  ↑ Push  ↓ Pull</value></data>
+  <data name="Status.IconLegend" xml:space="preserve"><value>✓ Clean worktree; ● uncommitted changes; ↑ to push; ↓ to pull; ! conflict or failed check; ? unknown; — no comparable upstream. A repository's arrows count commits; the Children row counts affected repositories. Hover for details and check times.</value></data>
+  <data name="Repository.ChildrenShort" xml:space="preserve"><value>Children {0}</value></data>
+  <data name="Status.AheadHint" xml:space="preserve"><value>↑ {0} commits to push (relative to the locally known upstream)</value></data>
+  <data name="Status.BehindHint" xml:space="preserve"><value>↓ {0} commits to pull (relative to the locally known upstream)</value></data>
+  <data name="Status.ChildrenModified" xml:space="preserve"><value>{0} nested repositories have uncommitted changes</value></data>
+  <data name="Status.ChildrenAhead" xml:space="preserve"><value>{0} nested repositories have commits to push</value></data>
+  <data name="Status.ChildrenBehind" xml:space="preserve"><value>{0} nested repositories have commits to pull</value></data>
+  <data name="Status.ChildrenProblems" xml:space="preserve"><value>{0} nested repositories have conflicts or failed local checks</value></data>
+  <data name="Status.ChildrenUnknown" xml:space="preserve"><value>{0} nested repositories do not yet have complete status results</value></data>
+  <data name="Status.ChildrenNoUpstream" xml:space="preserve"><value>{0} nested repositories have no upstream configured for their current branch, so push/pull counts are unavailable. This does not mean they have no remote.</value></data>
+  <data name="Status.ChildrenNoComparison" xml:space="preserve"><value>{0} nested repositories have a detached HEAD or no commits yet; remote branches are not compared</value></data>
+  <data name="Status.ChildrenWorktreesClean" xml:space="preserve"><value>All nested worktrees are clean; see the adjacent badges for remote comparison status</value></data>
+  <data name="Status.ChildrenClear" xml:space="preserve"><value>All nested worktrees are clean and match their locally known upstreams</value></data>
+  <data name="Status.ChildrenDetails" xml:space="preserve"><value>{0} nested repositories (all levels, excluding this repository).&#10;● Modified: {1}; ↑ to push: {2}; ↓ to pull: {3}; ! problems: {4}.&#10;? incomplete status: {5}; — no upstream configured: {6}; — detached HEAD / no commits: {7}.&#10;No upstream configured does not mean no remote. Counts refer to repositories; one may appear in several categories. Based on locally known status; failed checks may retain previous results. Expand to inspect each repository.</value></data>
   <data name="Repository.List" xml:space="preserve"><value>Repository list</value></data>
   <data name="Repository.AddButton" xml:space="preserve"><value>＋ Add repository</value></data>
   <data name="Repository.AddHint" xml:space="preserve"><value>Add a Git worktree and choose a group (Ctrl+O)</value></data>
@@ -77,7 +95,7 @@
   <data name="Window.KeepSaved" xml:space="preserve"><value>Keep open preference saved.</value></data>
   <data name="Startup.ReadFailed" xml:space="preserve"><value>Cannot read Windows startup settings. Check your user permissions.</value></data>
   <data name="Startup.WriteDenied" xml:space="preserve"><value>Windows denied changes to startup settings. Check your user permissions.</value></data>
-  <data name="Startup.Enabled" xml:space="preserve"><value>Startup at sign-in enabled. The app will start minimized to the taskbar.</value></data>
+  <data name="Startup.Enabled" xml:space="preserve"><value>Startup at sign-in enabled. Only the tray icon will appear at sign-in.</value></data>
   <data name="Startup.Disabled" xml:space="preserve"><value>Startup at sign-in disabled.</value></data>
   <data name="Remote.Enabled" xml:space="preserve"><value>Remote checks enabled and queued.</value></data>
   <data name="Remote.Disabled" xml:space="preserve"><value>Remote checks disabled. Pending checks are being canceled; local checks continue.</value></data>
@@ -113,9 +131,9 @@
   <data name="Remote.Help" xml:space="preserve"><value>Checks origin first, otherwise the first remote by name. Supports standard HTTPS / SSH and constrained fetch mappings. No sign-in dialog appears on authentication failure. Configure Git Credential Manager or SSH outside the app first.</value></data>
   <data name="Remote.Refresh" xml:space="preserve"><value>Check remotes now</value></data>
   <data name="Startup.Toggle" xml:space="preserve"><value>Start when I sign in to Windows</value></data>
-  <data name="Startup.Help" xml:space="preserve"><value>Off by default; enable separately on each computer. Saved automatically. Starts minimized at sign-in; select its taskbar or tray icon to open. Enable again after moving the application folder.</value></data>
+  <data name="Startup.Help" xml:space="preserve"><value>Off by default; enable separately on each computer. Saved automatically. Starts hidden at sign-in; select its tray icon to open. Enable again after moving the application folder.</value></data>
   <data name="Tray.Open" xml:space="preserve"><value>Open RepoTracker</value></data>
-  <data name="Tray.Help" xml:space="preserve"><value>The tray icon remains available while running. Right-click for settings or exit. If hidden under the corner arrow, drag it out or enable it in Windows taskbar settings. Windows controls which icons are hidden.</value></data>
+  <data name="Tray.Help" xml:space="preserve"><value>Select the tray icon to open the panel without a taskbar button. Right-click for settings or exit. If hidden under the corner arrow, drag it out or enable it in Windows taskbar settings. Windows controls which icons are hidden.</value></data>
   <data name="Source.Tab" xml:space="preserve"><value>Source rules</value></data>
   <data name="Source.PriorityHint" xml:space="preserve"><value>Exact hosts take priority; wildcards use the longest suffix. Rules only affect display.</value></data>
   <data name="Action.New" xml:space="preserve"><value>New</value></data>
@@ -181,7 +199,9 @@ The source remote may differ from the branch upstream. ↑↓ always use the loc
   <data name="Status.Retry" xml:space="preserve"><value>Will retry automatically</value></data>
   <data name="Status.NotRead" xml:space="preserve"><value>Git status not read yet</value></data>
   <data name="Status.NoCommits" xml:space="preserve"><value>No commits yet</value></data>
-  <data name="Status.NoUpstream" xml:space="preserve"><value>No upstream</value></data>
+  <data name="Status.NoUpstream" xml:space="preserve"><value>No upstream configured for this branch</value></data>
+  <data name="Status.NoUpstreamHint" xml:space="preserve"><value>This branch has no upstream configured for comparison, so push/pull counts are unavailable. This does not mean there is no remote. Worktree changes are still checked.</value></data>
+  <data name="Status.DetachedComparison" xml:space="preserve"><value>Detached HEAD; remote branches are not compared</value></data>
   <data name="Status.UnknownCounts" xml:space="preserve"><value>Upstream counts unknown</value></data>
   <data name="Status.InSync" xml:space="preserve"><value>Matches known upstream</value></data>
   <data name="Status.LocalPrefix" xml:space="preserve"><value>Local </value></data>

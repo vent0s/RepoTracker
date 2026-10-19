@@ -2,7 +2,9 @@
 [CmdletBinding()]
 param(
     # An explicit compatibility build; omission requires the repository's pinned SDK.
-    [ValidatePattern('^\d+\.\d+\.\d+$')][string]$SdkVersion
+    [ValidatePattern('^\d+\.\d+\.\d+$')][string]$SdkVersion,
+    [switch]$PortableOnly,
+    [string]$CompilerPath = (Join-Path $PSScriptRoot '.local/installer-tools/inno-7.1.0/ISCC.exe')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -44,6 +46,7 @@ if (@($runtime.runtimeOptions.includedFrameworks).Count -ne 2 -or
     @($runtime.runtimeOptions.includedFrameworks | Where-Object version -NE $runtimeVersion).Count -gt 0) { throw 'Unexpected bundled framework versions.' }
 
 Copy-Item -LiteralPath (Join-Path $projectRoot 'doc/便携版使用说明.md') -Destination (Join-Path $package 'README.md')
+Copy-Item -LiteralPath (Join-Path $projectRoot 'doc/安装与升级.md') -Destination (Join-Path $package 'INSTALL.md')
 Copy-Item -LiteralPath (Join-Path $projectRoot 'doc/兼容性与发布说明.md') -Destination (Join-Path $package 'COMPATIBILITY.md')
 Copy-Item -LiteralPath (Join-Path $projectRoot 'doc/依赖与素材核查.md') -Destination (Join-Path $package 'DEPENDENCIES.md')
 Copy-Item -LiteralPath (Join-Path $projectRoot 'THIRD-PARTY-NOTICES.md') -Destination $package
@@ -91,3 +94,4 @@ $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash
 Write-Output "Package: $zip"
 Write-Output "SHA256: $hash"
 Write-Output "SDK: $actualSdk (pinned: $pinnedSdk); runtime: $runtimeVersion; unsigned local preview."
+if (!$PortableOnly) { & (Join-Path $projectRoot 'build-installer.ps1') -PackageDirectory $package -CompilerPath $CompilerPath }

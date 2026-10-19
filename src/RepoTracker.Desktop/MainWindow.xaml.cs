@@ -12,7 +12,6 @@ using RepoTracker.Core.Status;
 using RepoTracker.Desktop.ViewModels;
 using RepoTracker.Desktop.Windows;
 using RepoTracker.Infrastructure.Runtime;
-using RepoTracker.Infrastructure.Git;
 
 namespace RepoTracker.Desktop;
 
@@ -50,14 +49,14 @@ public partial class MainWindow : Window
         StartupRegistration = startupRegistration;
         Model = new ShellViewModel(registry, scheduler, remoteScheduler);
         RefreshCommand = new RelayCommand(scheduler.Refresh, () => !closing && !collapse!.IsSuspended);
-        collapse = new AutoCollapseController(this, () => Model.KeepExpanded);
+        collapse = new AutoCollapseController(this, () => Model.KeepExpanded, CollapsePanel);
         ToggleKeepCommand = new RelayCommand(async () => await Model.SetKeepExpandedAsync(!Model.KeepExpanded), () => Model.CanEdit);
         SettingsCommand = new RelayCommand(ShowSettings, () => !collapse.IsSuspended);
         ChooseFolderCommand = new RelayCommand(ShowAddRepository, () => !collapse.IsSuspended && Model.CanEdit);
         NewGroupCommand = new RelayCommand(ShowNewGroup, () => !collapse.IsSuspended && Model.CanEdit);
         ManageGroupsCommand = new RelayCommand(() => Model.ManagingGroups = !Model.ManagingGroups, () => Model.CanEdit);
         UndoCommand = new RelayCommand(async () => await Model.ExecuteAsync(() => registry.UndoRemoveAsync(lifetime.Token), Text.Get("Repository.Restored")), () => Model.CanUndo);
-        CollapseCommand = new RelayCommand(() => WindowState = WindowState.Minimized, () => !collapse.IsSuspended);
+        CollapseCommand = new RelayCommand(CollapsePanel, () => !collapse.IsSuspended);
         InitializeComponent();
         scheduler.Changed += StatusChanged;
         remoteScheduler.Changed += StatusChanged;
@@ -90,7 +89,18 @@ public partial class MainWindow : Window
         StateChanged += (_, _) =>
         {
             log.Write("window.state:" + WindowState);
-            if (WindowState == WindowState.Normal) ClampPosition();
+            if (WindowState == WindowState.Minimized)
+            {
+                // Never leave a minimized tool-window caption on the desktop.
+                Dispatcher.BeginInvoke(() =>
+                {
+                    if (closing) return;
+                    // WPF defers native state changes while hidden; normalize before Hide.
+                    WindowState = WindowState.Normal;
+                    CollapsePanel();
+                });
+            }
+            else if (IsVisible) ClampPosition();
         };
         LocationChanged += (_, _) =>
         {
@@ -112,6 +122,12 @@ public partial class MainWindow : Window
 
     private nint WindowMessage(nint hwnd, int message, nint wParam, nint lParam, ref bool handled)
     {
+        if (message == 0x0112 && (wParam.ToInt64() & 0xFFF0) == 0xF020) // SC_MINIMIZE
+        {
+            handled = true;
+            Dispatcher.BeginInvoke(CollapsePanel);
+            return 0;
+        }
         if (message == 0x0218)
         {
             if (wParam == 4) { StatusScheduler.Suspend(); RemoteScheduler.Suspend(); }
@@ -159,10 +175,20 @@ public partial class MainWindow : Window
 
     public void RestorePanel()
     {
+        if (closing) return;
+        ShowActivated = true;
         WindowState = WindowState.Normal;
+        if (!IsVisible) Show();
         ClampPosition();
         NativeWindows.Activate(this);
         log.Write("window.restored");
+    }
+
+    public void CollapsePanel()
+    {
+        if (closing || collapse.IsSuspended) return;
+        Hide();
+        log.Write("window.collapsed");
     }
 
     public void ShowSettings()
@@ -196,11 +222,14 @@ public partial class MainWindow : Window
         if (available) ShowSettings();
     }
 
-    public string? ChooseFolder(Window? owner = null)
+    public string? ChooseFolder(Window? owner = null) => ChooseFolder(owner, null);
+
+    private string? ChooseFolder(Window? owner, string? initialDirectory)
     {
         using var suspension = collapse.Suspend();
         log.Write("folder-picker.opened");
         var picker = new OpenFolderDialog { Title = Text.Get("Repository.ChooseFolder"), Multiselect = false };
+        if (initialDirectory is not null && Directory.Exists(initialDirectory)) picker.InitialDirectory = initialDirectory;
         var accepted = picker.ShowDialog(owner ?? this) == true;
         log.Write("folder-picker.closed");
         return accepted ? picker.FolderName : null;
@@ -209,42 +238,21 @@ public partial class MainWindow : Window
     public void ShowNewGroup() => ShowEntry(new(Text.Get("Group.New"), Text.Get("Group.Description"), Text.Get("Group.Name"), "", null, null,
         Text.Get("Action.Create"), async (name, _, token) => { await Model.Registry.CreateGroupAsync(name, token); Model.Notice = Text.Get("Group.Created"); }));
 
-    public void ShowAddRepository()
+    public void ShowAddRepository() => ShowRepositoryEntry(null);
+
+    private void ShowRepositoryEntry(TrackedRepository? parent)
     {
         AddRepositoryResult? added = null;
-        ShowEntry(new(Text.Get("Repository.Add"), Text.Get("Repository.AddDescription"), Text.Get("Repository.Folder"), "",
-            Model.GroupChoices, null, Text.Get("Action.Add"), async (path, groupId, token) =>
+        ShowEntry(new(Text.Get(parent is null ? "Repository.Add" : "Repository.AddChild"),
+            parent is null ? Text.Get("Repository.AddDescription") : Text.Format("Repository.AddChildDescription", parent.WorktreeRoot),
+            Text.Get("Repository.Folder"), "", parent is null ? Model.GroupChoices : null, null, Text.Get("Action.Add"), async (path, groupId, token) =>
             {
-                added = await Model.Registry.AddAsync(path, groupId, token);
+                added = parent is null ? await Model.Registry.AddAsync(path, groupId, token)
+                    : await Model.Registry.AddChildAsync(parent.Id, path, token);
                 Model.Notice = added.AlreadyTracked ? Text.Get("Repository.Duplicate")
                     : added.GroupFellBack ? Text.Get("Repository.AddedFallback") : Text.Get("Repository.Added");
-            }, ChooseFolder, (owner, path, groupId) =>
-            {
-                var imported = DiscoverRepositories(owner, path, groupId, completeSingle: true);
-                added = imported.FirstOrDefault();
-                return imported.Count > 0;
-            }));
+            }, owner => ChooseFolder(owner, parent?.WorktreeRoot)));
         if (added is not null) _ = RevealRepositoryAsync(added.Repository);
-    }
-
-    private IReadOnlyList<AddRepositoryResult> DiscoverRepositories(Window owner, string path, Guid? groupId, bool completeSingle = false)
-    {
-        if (completeSingle)
-        {
-            if (string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path)) throw new TrackerException(Text.Get("Repository.AbsolutePath"));
-            if (!Directory.Exists(path)) throw new TrackerException(Text.Get("Repository.InvalidPath"));
-        }
-        var focus = Keyboard.FocusedElement;
-        using var suspension = collapse.Suspend();
-        var dialog = new RepositoryDiscoveryWindow(new NestedRepositoryScanner(new GitRepositoryLocator(new GitProcess())), Model.Registry, path, groupId, completeSingle)
-            { Owner = owner };
-        dialog.ShowDialog();
-        if (dialog.Imported.Count > 0)
-            Model.Notice = (dialog.Imported.All(result => result.AlreadyTracked) ? Text.Get("Repository.Duplicate")
-                : Text.Format("Repository.Imported", dialog.Imported.Count(result => !result.AlreadyTracked)))
-                + (dialog.Imported.Any(result => result.GroupFellBack) ? " · " + Text.Get("Repository.AddedFallback") : "");
-        if (owner == this) RestoreFocusAfterDialog(focus);
-        return dialog.Imported;
     }
 
     private async Task RevealRepositoryAsync(TrackedRepository repo)
@@ -351,13 +359,9 @@ public partial class MainWindow : Window
             move.Items.Add(item);
         }
         menu.Items.Add(move);
-        var discover = new MenuItem { Header = Text.Get("Repository.ScanAction"), IsEnabled = Model.CanEdit };
-        discover.Click += (_, _) => Dispatcher.BeginInvoke(async () =>
-        {
-            var imported = DiscoverRepositories(this, row.Path, row.Repository.GroupId);
-            if (imported.FirstOrDefault() is { } added) await RevealRepositoryAsync(added.Repository);
-        });
-        menu.Items.Add(discover);
+        var addChild = new MenuItem { Header = Text.Get("Repository.AddChildAction"), IsEnabled = Model.CanEdit };
+        addChild.Click += (_, _) => Dispatcher.BeginInvoke(() => ShowRepositoryEntry(row.Repository));
+        menu.Items.Add(addChild);
         menu.Items.Add(new Separator());
         var remove = new MenuItem { Header = Text.Get("Repository.RemoveMenu"), IsEnabled = Model.CanEdit };
         remove.Click += (_, _) => Dispatcher.BeginInvoke(() => ShowEntry(new(Text.Get("Repository.RemoveTitle"), Text.Format("Repository.RemoveDescription", row.Name),
@@ -376,6 +380,6 @@ public partial class MainWindow : Window
     private void MenuOpened(object sender, RoutedEventArgs e) => menuSuspension ??= collapse.Suspend();
     private void MenuClosed(object sender, RoutedEventArgs e) { menuSuspension?.Dispose(); menuSuspension = null; }
     private void OpenSettingsFromMenu(object sender, RoutedEventArgs e) => Dispatcher.BeginInvoke(ShowSettings);
-    private void CollapseFromMenu(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+    private void CollapseFromMenu(object sender, RoutedEventArgs e) => Dispatcher.BeginInvoke(CollapsePanel);
     private void ExitFromMenu(object sender, RoutedEventArgs e) => Close();
 }

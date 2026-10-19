@@ -18,19 +18,21 @@ internal sealed partial class WindowProbe
         // A flags=0 MODIFY confirms the shell owns this icon without changing its fields.
         // GetRect cannot require a rectangle for an icon in a closed overflow flyout.
         await WaitFor(() => Shell_NotifyIcon(1, ref data));
-        Require(panel.ShowInTaskbar, "Tray replaced the taskbar entry.");
+        RequireTrayOnly(panel);
         if (Environment.GetEnvironmentVariable("REPOTRACKER_TEST_MINIMIZED") == "1")
-            Require(panel.WindowState == WindowState.Minimized && !panel.IsActive, "Tray creation activated minimized startup.");
-        checks.Add("Real shell notification icon exists, including minimized startup; taskbar entry preserved.");
+            Require(!panel.IsVisible && !panel.IsActive, "Tray creation activated hidden startup.");
+        checks.Add("Real shell notification icon exists, including hidden startup; no taskbar entry.");
 
         await panel.Model.SetKeepExpandedAsync(true);
         foreach (var notification in new[] { 0x400, 0x401 }) // NIN_SELECT and NIN_KEYSELECT
         {
-            panel.WindowState = WindowState.Minimized;
+            panel.CollapsePanel();
+            Require(!panel.IsVisible, "Panel did not hide before tray activation.");
             PostMessage(handle, TrayIcon.CallbackMessage, 0, (nint)((TrayIcon.IconId << 16) | notification));
-            await WaitFor(() => panel.WindowState == WindowState.Normal);
+            await WaitFor(() => panel.IsVisible && panel.WindowState == WindowState.Normal);
+            RequireTrayOnly(panel);
         }
-        checks.Add("Mouse and keyboard shell activation callbacks restore the minimized panel.");
+        checks.Add("Mouse and keyboard shell activation callbacks restore the hidden panel without a taskbar entry.");
 
         // Remove only this test process's icon, then replay the broadcast to its own hidden window.
         // Explorer and other programs are never restarted or modified.
@@ -43,19 +45,25 @@ internal sealed partial class WindowProbe
         Require(Shell_NotifyIcon(1, ref data), "Duplicate recreation lost the icon.");
         checks.Add("Explorer recreation notification restores a missing icon; repeated notification preserves it.");
 
-        // A cancelled tray menu must not restore a minimized panel or leak the collapse guard.
-        panel.WindowState = WindowState.Minimized;
+        // A cancelled tray menu must not restore a hidden panel or leak the collapse guard.
+        panel.CollapsePanel();
         await UseTrayMenu(handle, null);
-        Require(panel.WindowState == WindowState.Minimized && !panel.IsAutoCollapseSuspended, "Menu dismissal changed window state or leaked suspension.");
+        Require(!panel.IsVisible && !panel.IsAutoCollapseSuspended, "Menu dismissal changed visibility or leaked suspension.");
         await UseTrayMenu(handle, Text.Get("Tray.Open"));
-        await WaitFor(() => panel.WindowState == WindowState.Normal);
+        await WaitFor(() => panel.IsVisible && panel.WindowState == WindowState.Normal);
+        RequireTrayOnly(panel);
 
         var settingsTask = WatchSettings();
         await UseTrayMenu(handle, Text.Get("Settings.Window"));
         await settingsTask;
         Require(!panel.IsAutoCollapseSuspended, "Tray settings leaked the collapse guard.");
         checks.Add("Real localized native menu: dismissal, open, settings, modal reuse and exit; settings explain overflow and per-computer startup.");
+        panel.CollapsePanel();
+        Require(!panel.IsVisible, "Panel did not hide before tray exit.");
         await UseTrayMenu(handle, Text.Get("App.Exit"));
+        tray.Dispose();
+        Require(!Shell_NotifyIcon(1, ref data), "Exited test left its notification icon registered with the shell.");
+        checks.Add("Shell rejects MODIFY after disposal: the test icon was actually removed");
 
         async Task WatchSettings()
         {

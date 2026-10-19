@@ -19,7 +19,11 @@
   <data name="Action.Create" xml:space="preserve"><value>创建</value></data>
   <data name="Group.Created" xml:space="preserve"><value>已创建分组。</value></data>
   <data name="Repository.Add" xml:space="preserve"><value>添加仓库</value></data>
-  <data name="Repository.AddDescription" xml:space="preserve"><value>选择仓库目录或其中的子目录。“添加”默认查找子仓库，发现后可勾选导入；取消下方勾选则只添加当前仓库。</value></data>
+  <data name="Repository.AddDescription" xml:space="preserve"><value>输入或浏览选择仓库目录，只添加指定仓库。重复路径会定位到已有记录。添加子仓库可使用仓库行菜单中的“添加子仓库…”。</value></data>
+  <data name="Repository.AddChild" xml:space="preserve"><value>添加子仓库</value></data>
+  <data name="Repository.AddChildAction" xml:space="preserve"><value>添加子仓库…</value></data>
+  <data name="Repository.AddChildDescription" xml:space="preserve"><value>选择以下目录内的独立 Git 子仓库，使用完整路径。新记录沿用父仓库分组；重复项只定位已有记录。&#10;父仓库：{0}</value></data>
+  <data name="Repository.InvalidChild" xml:space="preserve"><value>请选择父仓库目录内的独立 Git 子仓库。父仓库本身、普通子文件夹或其他位置的仓库不能作为它的子仓库添加。</value></data>
   <data name="Repository.Folder" xml:space="preserve"><value>仓库目录</value></data>
   <data name="Action.Add" xml:space="preserve"><value>添加</value></data>
   <data name="Repository.Duplicate" xml:space="preserve"><value>该工作树已在跟踪列表中，已定位到对应仓库。</value></data>
@@ -39,7 +43,7 @@
   <data name="Repository.RemoveTitle" xml:space="preserve"><value>移除仓库跟踪</value></data>
   <data name="Repository.Remove" xml:space="preserve"><value>移除跟踪</value></data>
   <data name="Repository.Removed" xml:space="preserve"><value>已移除跟踪，可点击“撤销移除”恢复。</value></data>
-  <data name="App.AlreadyRunning" xml:space="preserve"><value>RepoTracker 已在运行，但未能唤醒窗口。请从任务栏打开已有窗口，并确认两个进程的权限级别相同。</value></data>
+  <data name="App.AlreadyRunning" xml:space="preserve"><value>RepoTracker 已在运行，但未能唤醒窗口。请从右下角托盘打开已有窗口，并确认两个进程的权限级别相同。</value></data>
   <data name="App.StartFailed" xml:space="preserve"><value>无法启动 RepoTracker。请检查启动参数和用户目录权限。</value></data>
   <data name="Repository.Open" xml:space="preserve"><value>打开目录</value></data>
   <data name="Repository.ActionsHint" xml:space="preserve"><value>移动分组 / 移除跟踪</value></data>
@@ -54,9 +58,9 @@
   <data name="Settings.Hint" xml:space="preserve"><value>窗口设置（Ctrl+,）</value></data>
   <data name="Settings.Window" xml:space="preserve"><value>窗口设置</value></data>
   <data name="Action.More" xml:space="preserve"><value>更多</value></data>
-  <data name="Window.Collapse" xml:space="preserve"><value>收起到任务栏</value></data>
+  <data name="Window.Collapse" xml:space="preserve"><value>收起到托盘</value></data>
   <data name="App.Exit" xml:space="preserve"><value>退出 RepoTracker</value></data>
-  <data name="Window.CollapseHint" xml:space="preserve"><value>收起到任务栏（Esc）</value></data>
+  <data name="Window.CollapseHint" xml:space="preserve"><value>收起到托盘（Esc）</value></data>
   <data name="Repository.Undo" xml:space="preserve"><value>撤销移除</value></data>
   <data name="Group.Heading" xml:space="preserve"><value>仓库分组</value></data>
   <data name="Group.NewButton" xml:space="preserve"><value>＋ 新建分组</value></data>
@@ -64,7 +68,21 @@
   <data name="Group.FinishManaging" xml:space="preserve"><value>完成管理</value></data>
   <data name="Repository.PathColumn" xml:space="preserve"><value>仓库 / 路径</value></data>
   <data name="Status.Branch" xml:space="preserve"><value>分支</value></data>
-  <data name="Status.WorktreeColumn" xml:space="preserve"><value>工作区 / 已知上游</value></data>
+  <data name="Status.WorktreeColumn" xml:space="preserve"><value>● 修改  ↑ 推送  ↓ 拉取</value></data>
+  <data name="Status.IconLegend" xml:space="preserve"><value>✓ 工作区干净；● 未提交；↑ 待推送；↓ 待拉取；! 冲突或检查失败；? 未知；— 无可比较的上游。当前仓库的箭头数字是提交数，“子仓库”一行的数字是受影响仓库数。悬停查看详情和检查时间。</value></data>
+  <data name="Repository.ChildrenShort" xml:space="preserve"><value>子仓库 {0}</value></data>
+  <data name="Status.AheadHint" xml:space="preserve"><value>↑ {0} 个待推送提交（相对本地已知上游）</value></data>
+  <data name="Status.BehindHint" xml:space="preserve"><value>↓ {0} 个待拉取提交（相对本地已知上游）</value></data>
+  <data name="Status.ChildrenModified" xml:space="preserve"><value>{0} 个子仓库有未提交变更</value></data>
+  <data name="Status.ChildrenAhead" xml:space="preserve"><value>{0} 个子仓库有待推送提交</value></data>
+  <data name="Status.ChildrenBehind" xml:space="preserve"><value>{0} 个子仓库有待拉取提交</value></data>
+  <data name="Status.ChildrenProblems" xml:space="preserve"><value>{0} 个子仓库有冲突或本地检查失败</value></data>
+  <data name="Status.ChildrenUnknown" xml:space="preserve"><value>{0} 个子仓库尚未取得完整状态</value></data>
+  <data name="Status.ChildrenNoUpstream" xml:space="preserve"><value>{0} 个子仓库的当前分支未设置上游，暂不能判断待推送／待拉取数量。这不代表没有远程仓库。</value></data>
+  <data name="Status.ChildrenNoComparison" xml:space="preserve"><value>{0} 个子仓库处于分离 HEAD 或尚无提交，暂不比较远程分支</value></data>
+  <data name="Status.ChildrenWorktreesClean" xml:space="preserve"><value>所有子仓库工作区干净；远程比较状态见旁边的标记</value></data>
+  <data name="Status.ChildrenClear" xml:space="preserve"><value>所有子仓库工作区干净，且与本地已知上游一致</value></data>
+  <data name="Status.ChildrenDetails" xml:space="preserve"><value>共 {0} 个子仓库（包含所有层级，不含当前仓库）。&#10;● 未提交：{1} 个；↑ 待推送：{2} 个；↓ 待拉取：{3} 个；! 异常：{4} 个。&#10;? 状态未完整：{5} 个；— 未设置上游：{6} 个；— 分离 HEAD／尚无提交：{7} 个。&#10;未设置上游不代表没有远程仓库。数字为仓库数，同一仓库可同时出现在多项中。基于本地已知状态，检查失败时可能保留上次结果；展开可查看各仓库详情。</value></data>
   <data name="Repository.List" xml:space="preserve"><value>仓库列表</value></data>
   <data name="Repository.AddButton" xml:space="preserve"><value>＋ 添加仓库</value></data>
   <data name="Repository.AddHint" xml:space="preserve"><value>添加 Git 工作树并选择分组（Ctrl+O）</value></data>
@@ -77,7 +95,7 @@
   <data name="Window.KeepSaved" xml:space="preserve"><value>保持展开设置已保存。</value></data>
   <data name="Startup.ReadFailed" xml:space="preserve"><value>无法读取 Windows 启动设置，请检查当前用户权限。</value></data>
   <data name="Startup.WriteDenied" xml:space="preserve"><value>Windows 未允许修改启动项，请检查当前用户权限。</value></data>
-  <data name="Startup.Enabled" xml:space="preserve"><value>已启用登录启动，登录后收起到任务栏。</value></data>
+  <data name="Startup.Enabled" xml:space="preserve"><value>已启用登录启动，登录后仅显示托盘图标。</value></data>
   <data name="Startup.Disabled" xml:space="preserve"><value>已关闭登录启动。</value></data>
   <data name="Remote.Enabled" xml:space="preserve"><value>已开启远程检查，正在排队。</value></data>
   <data name="Remote.Disabled" xml:space="preserve"><value>已关闭远程检查，正在取消未完成任务；本地检查继续。</value></data>
@@ -113,9 +131,9 @@
   <data name="Remote.Help" xml:space="preserve"><value>优先检查 origin，否则按名称选择第一个 remote。仅支持标准 HTTPS / SSH 与受控 fetch 映射；认证失败时不会弹出登录窗口。请先在应用外配置 Git Credential Manager 或 SSH。</value></data>
   <data name="Remote.Refresh" xml:space="preserve"><value>立即检查远程</value></data>
   <data name="Startup.Toggle" xml:space="preserve"><value>登录 Windows 时启动</value></data>
-  <data name="Startup.Help" xml:space="preserve"><value>默认关闭，需在每台电脑上单独开启，修改自动保存。登录启动时收起到任务栏，可点击任务栏或托盘图标展开。移动程序目录后需重新开启。</value></data>
+  <data name="Startup.Help" xml:space="preserve"><value>默认关闭，需在每台电脑上单独开启，修改自动保存。登录启动时仅显示托盘图标，点击托盘展开。移动程序目录后需重新开启。</value></data>
   <data name="Tray.Open" xml:space="preserve"><value>打开 RepoTracker</value></data>
-  <data name="Tray.Help" xml:space="preserve"><value>运行时托盘图标常驻，右键可打开设置或退出。若图标在右下角的小箭头内，可将它拖到外面，或在 Windows 任务栏设置中开启显示；是否收纳由 Windows 管理。</value></data>
+  <data name="Tray.Help" xml:space="preserve"><value>点击托盘图标打开面板，展开后也不占任务栏位置。右键可打开设置或退出。若图标在右下角的小箭头内，可将它拖到外面，或在 Windows 任务栏设置中开启显示；是否收纳由 Windows 管理。</value></data>
   <data name="Source.Tab" xml:space="preserve"><value>来源规则</value></data>
   <data name="Source.PriorityHint" xml:space="preserve"><value>精确域名优先；通配规则取最长后缀。规则只影响显示。</value></data>
   <data name="Action.New" xml:space="preserve"><value>新增</value></data>
@@ -181,7 +199,9 @@
   <data name="Status.Retry" xml:space="preserve"><value>稍后自动重试</value></data>
   <data name="Status.NotRead" xml:space="preserve"><value>尚未读取 Git 状态</value></data>
   <data name="Status.NoCommits" xml:space="preserve"><value>尚无提交</value></data>
-  <data name="Status.NoUpstream" xml:space="preserve"><value>无上游</value></data>
+  <data name="Status.NoUpstream" xml:space="preserve"><value>当前分支未设置上游</value></data>
+  <data name="Status.NoUpstreamHint" xml:space="preserve"><value>当前分支未设置用于比较的上游分支，暂不能判断待推送／待拉取数量；这不代表没有远程仓库。工作区修改状态仍正常检查。</value></data>
+  <data name="Status.DetachedComparison" xml:space="preserve"><value>分离 HEAD，暂不比较远程分支</value></data>
   <data name="Status.UnknownCounts" xml:space="preserve"><value>上游计数未知</value></data>
   <data name="Status.InSync" xml:space="preserve"><value>与已知上游一致</value></data>
   <data name="Status.LocalPrefix" xml:space="preserve"><value>本地 </value></data>

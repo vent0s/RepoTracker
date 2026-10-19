@@ -9,7 +9,7 @@ public sealed class NestedRepositoryWindowTests(ITestOutputHelper output)
     [Theory]
     [InlineData("zh-CN")]
     [InlineData("en-US")]
-    public async Task DiscoverSelectRescanAndCheckIndependentStatuses(string language)
+    public async Task ManuallyAddChildrenDeduplicateAndCheckIndependentStatuses(string language)
     {
         var root = new DirectoryInfo(AppContext.BaseDirectory);
         while (root is not null && !File.Exists(Path.Combine(root.FullName, "RepoTracker.slnx"))) root = root.Parent;
@@ -39,8 +39,16 @@ public sealed class NestedRepositoryWindowTests(ITestOutputHelper output)
             File.Copy(report, Path.Combine(run, "nested-" + scenario + "-report.json"));
         }
         await Launch("1");
-        Assert.True(File.Exists(Path.Combine(run, "nested-preview.png")));
+        Assert.True(File.Exists(Path.Combine(run, "nested-entry.png")));
+        Assert.True(File.Exists(Path.Combine(run, "nested-invalid.png")));
         Assert.True(File.Exists(Path.Combine(run, "nested-status.png")));
+        Assert.True(File.Exists(Path.Combine(run, "nested-no-upstream.png")));
+        Assert.True(File.Exists(Path.Combine(run, "nested-no-upstream-collapsed.png")));
+        Assert.True(File.Exists(Path.Combine(run, "nested-expanded-light-150.png")));
+        Assert.True(File.Exists(Path.Combine(run, "nested-summary-collapsed.png")));
+        Assert.True(File.Exists(Path.Combine(run, "nested-summary-light-150.png")));
+        Assert.True(File.Exists(Path.Combine(run, "nested-menu-dark.png")));
+        Assert.True(File.Exists(Path.Combine(run, "nested-submenu-light-150.png")));
         await Launch("reload");
         Assert.True(File.Exists(Path.Combine(run, "nested-restart.png")));
     }

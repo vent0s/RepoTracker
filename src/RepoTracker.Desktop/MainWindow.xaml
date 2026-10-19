@@ -4,24 +4,38 @@
         xmlns:l10n="clr-namespace:RepoTracker.Desktop.Localization"
         xmlns:vm="clr-namespace:RepoTracker.Desktop.ViewModels"
         Title="RepoTracker" Width="760" Height="760" ResizeMode="CanMinimize" Style="{StaticResource {x:Type Window}}"
-        ShowInTaskbar="True" Icon="{StaticResource AppIcon}" WindowStartupLocation="Manual"
+        ShowInTaskbar="False" WindowStyle="ToolWindow" Icon="{StaticResource AppIcon}" WindowStartupLocation="Manual"
         AutomationProperties.AutomationId="MainPanel">
   <WindowChrome.WindowChrome>
     <WindowChrome CaptionHeight="76" ResizeBorderThickness="0" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False" />
   </WindowChrome.WindowChrome>
   <Window.Resources>
+    <DataTemplate x:Key="StatusBadgeTemplate">
+      <Border Padding="4,2" Margin="0,0,3,0" CornerRadius="4" Background="{DynamicResource SurfaceBrush}" ToolTip="{Binding Tooltip}">
+        <TextBlock Text="{Binding Glyph}" FontFamily="Segoe UI Symbol" FontSize="12" FontWeight="SemiBold"
+                   AutomationProperties.Name="{Binding Description}">
+          <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Foreground" Value="{DynamicResource MutedBrush}" /><Style.Triggers>
+            <DataTrigger Binding="{Binding Tone}" Value="Warning"><Setter Property="Foreground" Value="{DynamicResource WarningBrush}" /></DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Error"><Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" /></DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Success"><Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" /></DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Accent"><Setter Property="Foreground" Value="{DynamicResource AccentBrush}" /></DataTrigger>
+          </Style.Triggers></Style></TextBlock.Style>
+        </TextBlock>
+      </Border>
+    </DataTemplate>
     <DataTemplate DataType="{x:Type vm:RepositoryRow}">
-      <Border Height="76" Padding="{Binding TreePadding}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+      <Border MinHeight="60" Padding="{Binding TreePadding}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
         <Border.Style><Style TargetType="Border"><Style.Triggers>
           <DataTrigger Binding="{Binding IsHighlighted}" Value="True"><Setter Property="Background" Value="{DynamicResource NoticeBrush}" /></DataTrigger>
         </Style.Triggers></Style></Border.Style>
         <Grid>
-          <Grid.ColumnDefinitions><ColumnDefinition Width="24" /><ColumnDefinition Width="40" /><ColumnDefinition Width="*" /><ColumnDefinition Width="90" /><ColumnDefinition Width="140" /><ColumnDefinition Width="72" /></Grid.ColumnDefinitions>
-          <Button Content="{Binding ExpansionGlyph}" Style="{StaticResource IconButton}" Width="24" Padding="0" Click="ToggleRepositoryChildren"
+          <Grid.RowDefinitions><RowDefinition Height="56" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="28" /><ColumnDefinition Width="40" /><ColumnDefinition Width="*" /><ColumnDefinition Width="126" /><ColumnDefinition Width="150" /><ColumnDefinition Width="72" /></Grid.ColumnDefinitions>
+          <Button Style="{StaticResource TreeExpanderButton}" Click="ToggleRepositoryChildren"
                   Visibility="{Binding HasChildren, Converter={StaticResource BoolVisibility}}" ToolTip="{Binding ExpansionAccessibleName}"
                   IsEnabled="{Binding Model.CanEdit, RelativeSource={RelativeSource AncestorType=Window}}"
                   AutomationProperties.AutomationId="ToggleRepositoryChildren" AutomationProperties.Name="{Binding ExpansionAccessibleName}" />
-          <Border Grid.Column="1" Background="{DynamicResource HoverBrush}" Width="32" Height="32" CornerRadius="8" HorizontalAlignment="Left">
+          <Border Grid.Column="1" Background="{DynamicResource HoverBrush}" Width="32" Height="32" CornerRadius="8" HorizontalAlignment="Left" AutomationProperties.AutomationId="RepositorySourceIcon">
             <Path Width="21" Height="21" Stretch="Uniform" ToolTip="{Binding SourceTooltip}" AutomationProperties.Name="{Binding SourceTooltip}" Fill="{DynamicResource MutedBrush}">
               <Path.Style><Style TargetType="Path"><Setter Property="Data" Value="{StaticResource SourceGit}" /><Style.Triggers>
                 <DataTrigger Binding="{Binding SourceIconKey}" Value="GitHub"><Setter Property="Data" Value="{StaticResource SourceGitHub}" /></DataTrigger>
@@ -32,23 +46,31 @@
             </Path>
           </Border>
           <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,14,0">
-            <TextBlock Text="{Binding DisplayPath}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding DisplayPath}" />
+            <TextBlock Text="{Binding DisplayPath}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding DisplayPath}" AutomationProperties.AutomationId="RepositoryName" />
             <TextBlock Text="{Binding Path}" FontSize="11" Foreground="{DynamicResource DimBrush}" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" ToolTip="{Binding Path}" />
-            <TextBlock Text="{Binding ChildrenText}" FontSize="10" Foreground="{DynamicResource MutedBrush}" Margin="0,3,0,0" Visibility="{Binding HasChildren, Converter={StaticResource BoolVisibility}}" />
           </StackPanel>
           <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="0,0,8,0" ToolTip="{Binding StatusTooltip}">
             <TextBlock Text="{Binding BranchText}" Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding BranchDetail}" FontSize="10" Foreground="{DynamicResource DimBrush}" TextTrimming="CharacterEllipsis" />
           </StackPanel>
-          <StackPanel Grid.Column="4" VerticalAlignment="Center" ToolTip="{Binding StatusTooltip}">
-            <TextBlock Text="{Binding StatusText}"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Foreground" Value="{DynamicResource MutedBrush}" /><Style.Triggers>
-              <DataTrigger Binding="{Binding StatusTone}" Value="Error"><Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" /></DataTrigger>
-              <DataTrigger Binding="{Binding StatusTone}" Value="Warning"><Setter Property="Foreground" Value="{DynamicResource WarningBrush}" /></DataTrigger>
-              <DataTrigger Binding="{Binding StatusTone}" Value="Success"><Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" /></DataTrigger>
-            </Style.Triggers></Style></TextBlock.Style></TextBlock>
-            <TextBlock Text="{Binding ComparisonText}" FontSize="11" Foreground="{DynamicResource MutedBrush}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding FreshnessText}" FontSize="10" Foreground="{DynamicResource DimBrush}" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding RemoteText}" ToolTip="{Binding RemoteTooltip}" FontSize="10" Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis" />
+          <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" ToolTip="{Binding StatusTooltip}" AutomationProperties.AutomationId="OwnStatus">
+            <ItemsControl ItemsSource="{Binding StatusBadges}" ItemTemplate="{StaticResource StatusBadgeTemplate}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            </ItemsControl>
+            <TextBlock Text="{Binding RemoteGlyph}" Margin="4,0,0,0" VerticalAlignment="Center" ToolTip="{Binding RemoteTooltip}" AutomationProperties.Name="{Binding RemoteText}"
+                       Visibility="{Binding RemoteEnabled, Converter={StaticResource BoolVisibility}}">
+              <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Foreground" Value="{DynamicResource DimBrush}" /><Style.Triggers>
+                <DataTrigger Binding="{Binding RemoteTone}" Value="Error"><Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" /></DataTrigger>
+              </Style.Triggers></Style></TextBlock.Style>
+            </TextBlock>
+          </StackPanel>
+          <StackPanel Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,0,0,9"
+                      Visibility="{Binding HasChildren, Converter={StaticResource BoolVisibility}}" ToolTip="{Binding DescendantTooltip}"
+                      AutomationProperties.AutomationId="DescendantStatus" AutomationProperties.Name="{Binding DescendantTooltip}">
+            <TextBlock Text="{Binding ChildrenLabel}" Foreground="{DynamicResource DimBrush}" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <ItemsControl ItemsSource="{Binding DescendantBadges}" ItemTemplate="{StaticResource StatusBadgeTemplate}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            </ItemsControl>
           </StackPanel>
           <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
             <Button Style="{StaticResource IconButton}" Width="32" Click="OpenRepositoryFolder" ToolTip="{l10n:Text Repository.Open}" AutomationProperties.Name="{Binding OpenFolderAccessibleName}" AutomationProperties.AutomationId="OpenRepository">
@@ -127,10 +149,10 @@
         </StackPanel>
       </Grid>
       <Grid Grid.Row="3" Margin="22,0" Background="{DynamicResource SurfaceBrush}">
-        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="90" /><ColumnDefinition Width="212" /></Grid.ColumnDefinitions>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="126" /><ColumnDefinition Width="222" /></Grid.ColumnDefinitions>
         <TextBlock Text="{l10n:Text Repository.PathColumn}" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource DimBrush}" FontSize="11" />
         <TextBlock Grid.Column="1" Text="{l10n:Text Status.Branch}" VerticalAlignment="Center" Foreground="{DynamicResource DimBrush}" FontSize="11" />
-        <TextBlock Grid.Column="2" Text="{l10n:Text Status.WorktreeColumn}" VerticalAlignment="Center" Foreground="{DynamicResource DimBrush}" FontSize="11" />
+        <TextBlock Grid.Column="2" Text="{l10n:Text Status.WorktreeColumn}" ToolTip="{l10n:Text Status.IconLegend}" VerticalAlignment="Center" Foreground="{DynamicResource DimBrush}" FontSize="11" />
       </Grid>
       <ScrollViewer x:Name="RepositoryScroll" Grid.Row="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="12,4,0,0" AutomationProperties.Name="{l10n:Text Repository.List}" KeyboardNavigation.TabNavigation="Continue">
         <ItemsControl ItemsSource="{Binding Groups}" MinWidth="{Binding RepositoryListMinWidth}" Width="{Binding ViewportWidth, ElementName=RepositoryScroll}" />

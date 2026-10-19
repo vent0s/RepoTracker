@@ -40,6 +40,8 @@ internal static class Program
 
     private static int Run(string[] args)
     {
+        if (args.Length == 3 && args[0] == "--readme-screenshots")
+            return ReadmeScreenshots.Run(args[1], args[2]);
         if (args.Length == 3 && args[0] == "--scan-repositories")
         {
             var timer = Stopwatch.StartNew();
@@ -79,7 +81,12 @@ internal static class Program
             timer.Start();
             return app.Run(window);
         }
-        var probe = new App { StartupRegistrationFactory = profile => new FixtureStartupRegistration(profile) };
+        var probe = new App
+        {
+            StartupRegistrationFactory = profile => new FixtureStartupRegistration(profile),
+            EnableTrayIcon = Environment.GetEnvironmentVariable("REPOTRACKER_TEST_TRAY") == "1",
+            ShellAppId = "Septim.RepoTracker.TestHost"
+        };
         probe.DispatcherUnhandledException += (_, e) =>
         {
             WriteStartupFailure(args, e.Exception);
@@ -118,6 +125,11 @@ internal sealed partial class WindowProbe(App application, string outputDirector
         try
         {
             await panel.Initialization;
+            if (Environment.GetEnvironmentVariable("REPOTRACKER_TEST_TRAY") != "1")
+            {
+                Require(application.TrayIcon is null, "An ordinary UI test registered a real shell notification icon.");
+                checks.Add("Ordinary UI scenario does not register a notification icon or add tray history");
+            }
             if (Environment.GetEnvironmentVariable("REPOTRACKER_TEST_NESTED") is not null)
             {
                 await CheckNestedRepositories(panel);
@@ -139,8 +151,9 @@ internal sealed partial class WindowProbe(App application, string outputDirector
             }
             if (Environment.GetEnvironmentVariable("REPOTRACKER_TEST_MINIMIZED") == "1")
             {
-                Require(panel.WindowState == WindowState.Minimized && panel.ShowInTaskbar && !panel.IsActive, "Login startup must remain minimized without activation.");
-                checks.Add("M5 actual --minimized process starts in taskbar without activation");
+                Require(!panel.IsVisible && !panel.IsActive, "Login startup must remain hidden without activation.");
+                RequireTrayOnly(panel);
+                checks.Add("Actual --minimized process starts hidden in the tray without activation or taskbar entry");
                 application.Shutdown(); return;
             }
             if (Environment.GetEnvironmentVariable("REPOTRACKER_TEST_RELOAD") == "1")
@@ -154,13 +167,12 @@ internal sealed partial class WindowProbe(App application, string outputDirector
             await FocusOwnWindow(new WindowInteropHelper(panel).Handle);
             await Task.Delay(200);
             var hwnd = new WindowInteropHelper(panel).Handle;
-            Require(panel.ShowInTaskbar && GetWindow(hwnd, 4) == 0 && (GetWindowLongPtr(hwnd, -20).ToInt64() & 0x80) == 0,
-                "Main window is not eligible for the taskbar / Alt+Tab.");
+            RequireTrayOnly(panel);
             var monitor = NativeWindows.GetMonitor(hwnd);
             var bounds = NativeWindows.Bounds(panel);
             Require(bounds.X >= monitor.Work.X - 1 && bounds.Y >= monitor.Work.Y - 1 &&
                 bounds.Right <= monitor.Work.Right + 1 && bounds.Bottom <= monitor.Work.Bottom + 1, "Panel is outside work area.");
-            checks.Add($"taskbar style, unowned window, physical bounds {bounds}; DPI {monitor.Dpi}; monitor {monitor.Monitor}");
+            checks.Add($"No taskbar / Alt+Tab entry when expanded; physical bounds {bounds}; DPI {monitor.Dpi}; monitor {monitor.Monitor}");
             checks.Add($"initial foreground={NativeWindows.GetForegroundWindow()}, panel={hwnd}, active={panel.IsActive}");
             SaveImage(panel, "main.png");
             SaveImage(panel, "main-150.png", 1.5);
@@ -190,18 +202,32 @@ internal sealed partial class WindowProbe(App application, string outputDirector
 
             Invoke(panel, "Collapse");
             await Task.Delay(150);
-            Require(panel.WindowState == WindowState.Minimized && panel.ShowInTaskbar, "Collapse must minimize without hiding taskbar entry.");
-            SendMessage(hwnd, 0x112, 0xF120, 0); // SC_RESTORE, as used by the shell.
+            Require(!panel.IsVisible && panel.WindowState == WindowState.Normal, "Collapse must hide without leaving a minimized desktop caption.");
+            panel.RestorePanel();
             await Task.Delay(150);
-            Require(panel.WindowState == WindowState.Normal, "System restore failed.");
-            checks.Add("collapse button and Windows SC_RESTORE");
+            Require(panel.IsVisible && panel.WindowState == WindowState.Normal, "Hidden panel restore failed.");
+            RequireTrayOnly(panel);
+            SendMessage(hwnd, 0x112, 0xF020, 0); // SC_MINIMIZE must also hide to the tray.
+            await Task.Delay(150);
+            Require(!panel.IsVisible && panel.WindowState == WindowState.Normal, "System minimize left a visible desktop caption.");
+            RequireTrayOnly(panel);
+            checks.Add("Collapse button and Windows SC_MINIMIZE hide to tray; restore never creates a taskbar entry");
 
             panel.RestorePanel();
+            panel.WindowState = WindowState.Minimized;
+            await Task.Delay(150);
+            Require(!panel.IsVisible && panel.WindowState == WindowState.Normal, "WindowState minimize did not hide to the tray.");
+            RequireTrayOnly(panel);
+            panel.RestorePanel();
+            RequireTrayOnly(panel);
+            await panel.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+            await FocusOwnWindow(hwnd);
+            await WaitFor(() => panel.IsActive && NativeWindows.GetForegroundWindow() == hwnd);
             ((Button)FindById(panel, "KeepExpanded")!).Focus();
             SendMessage(hwnd, 0x100, 0x1B, 0); // Keydown/up delivered only to this test window.
             SendMessage(hwnd, 0x101, 0x1B, 0);
             await Task.Delay(150);
-            Require(panel.WindowState == WindowState.Minimized, "Escape did not collapse panel.");
+            Require(!panel.IsVisible, "Escape did not hide panel.");
             checks.Add("Escape keyboard input");
 
             var root = FindRoot();
@@ -214,7 +240,8 @@ internal sealed partial class WindowProbe(App application, string outputDirector
                 "--profile", Path.Combine(outputDirectory, "profile"));
             await secondary.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
             await Task.Delay(150);
-            Require(secondary.ExitCode == 0 && panel.WindowState == WindowState.Normal, "Second process did not reactivate primary.");
+            Require(secondary.ExitCode == 0 && panel.IsVisible && panel.WindowState == WindowState.Normal, "Second process did not reactivate primary.");
+            RequireTrayOnly(panel);
             checks.Add("real second application process: IPC activation and clean secondary exit");
 
             await panel.Model.SetKeepExpandedAsync(false);
@@ -286,7 +313,7 @@ internal sealed partial class WindowProbe(App application, string outputDirector
             await Task.Delay(400);
             Require(NativeWindows.GetForegroundWindow() == foreignHwnd,
                 $"OS refused focus transfer: result={focusTransferred}, foreground={NativeWindows.GetForegroundWindow()}, foreign={foreignHwnd}, panel={hwnd}, active={panel.IsActive}.");
-            Require(panel.WindowState == WindowState.Normal, "Keep expanded did not survive foreign focus.");
+            Require(panel.IsVisible && panel.WindowState == WindowState.Normal, "Keep expanded did not survive foreign focus.");
             checks.Add("keep expanded survives actual focus transfer to another process");
 
             SendMessage(foreignHwnd, 0x8001, Environment.ProcessId, 0);
@@ -297,9 +324,10 @@ internal sealed partial class WindowProbe(App application, string outputDirector
             await panel.Model.SetKeepExpandedAsync(false);
             SetForegroundWindow(foreignHwnd);
             await Task.Delay(400);
-            Require(panel.WindowState == WindowState.Minimized,
+            Require(!panel.IsVisible,
                 $"Default focus loss did not collapse panel: foreground={NativeWindows.GetForegroundWindow()}, foreign={foreignHwnd}, active={panel.IsActive}, suspended={panel.IsAutoCollapseSuspended}.");
-            checks.Add("default focus loss minimizes; taskbar entry remains");
+            RequireTrayOnly(panel);
+            checks.Add("Default focus loss hides to tray without a taskbar entry");
             PostMessage(foreignHwnd, 0x10, 0, 0);
             await foreign.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(5));
 
@@ -326,7 +354,7 @@ internal sealed partial class WindowProbe(App application, string outputDirector
             {
                 Passed = exitCode == 0, Os = Environment.OSVersion.ToString(), Runtime = Environment.Version.ToString(),
                 Checks = checks, Error = error,
-                NotCovered = new[] { "Windows 11", "physical 150% / 200% DPI and mixed-DPI transitions", "taskbar actual mouse click / pinning / auto-hide", "monitor hot unplug", "real Windows logon / current-user Run writes; UI uses isolated startup adapter" }
+                NotCovered = new[] { "Windows 11", "physical 150% / 200% DPI and mixed-DPI transitions", "tray actual pointer click / overflow preferences", "monitor hot unplug", "real Windows logon / current-user Run writes; UI uses isolated startup adapter" }
             }, new JsonSerializerOptions { WriteIndented = true }));
             if (exitCode != 0) application.Shutdown(exitCode);
         }
@@ -342,6 +370,16 @@ internal sealed partial class WindowProbe(App application, string outputDirector
     }
 
     private static Task FocusOwnWindow(nint hwnd) => Task.Run(() => AutomationElement.FromHandle(hwnd).SetFocus());
+
+    private static void RequireTrayOnly(MainWindow panel)
+    {
+        var hwnd = new WindowInteropHelper(panel).Handle;
+        var style = GetWindowLongPtr(hwnd, -20).ToInt64();
+        Require(hwnd != 0 && !panel.ShowInTaskbar && (style & 0x80) != 0 && (style & 0x40000) == 0,
+            $"Panel must be a tool window without a taskbar / Alt+Tab entry; extended style={style:X}.");
+        Require(IsWindowVisible(hwnd) == panel.IsVisible && (!panel.IsVisible || !IsIconic(hwnd)),
+            "Native panel visibility differs from WPF or a minimized caption is visible on the desktop.");
+    }
 
     private static string FindRoot()
     {
@@ -404,4 +442,6 @@ internal sealed partial class WindowProbe(App application, string outputDirector
     [DllImport("user32.dll")] private static extern bool PostMessage(nint hwnd, uint message, nint wParam, nint lParam);
     [DllImport("user32.dll")] private static extern bool SetForegroundWindow(nint hwnd);
     [DllImport("user32.dll")] private static extern bool AllowSetForegroundWindow(uint processId);
+    [DllImport("user32.dll")] private static extern bool IsWindowVisible(nint hwnd);
+    [DllImport("user32.dll")] private static extern bool IsIconic(nint hwnd);
 }

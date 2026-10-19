@@ -40,8 +40,8 @@ public sealed class LocalizationTests
             Assert.False(string.IsNullOrWhiteSpace(translations[key]), key);
             static string[] Arguments(string text) => Regex.Matches(text, @"\{(\d+)(?:[^}]*)\}").Select(m => m.Groups[1].Value).Order().ToArray();
             Assert.Equal(Arguments(value), Arguments(translations[key]));
-            _ = string.Format(CultureInfo.InvariantCulture, value, new object[] { "repo", 2, 3, 4 });
-            _ = string.Format(CultureInfo.InvariantCulture, translations[key], new object[] { "仓库", 2, 3, 4 });
+            _ = string.Format(CultureInfo.InvariantCulture, value, new object[] { "repo", 2, 3, 4, 5, 6, 7, 8 });
+            _ = string.Format(CultureInfo.InvariantCulture, translations[key], new object[] { "仓库", 2, 3, 4, 5, 6, 7, 8 });
         }
         Assert.Equal("Settings", Text.Get("Settings.Heading", CultureInfo.GetCultureInfo("fr-FR")));
         Assert.Equal("设置", Text.Get("Settings.Heading", CultureInfo.GetCultureInfo("zh-CN")));

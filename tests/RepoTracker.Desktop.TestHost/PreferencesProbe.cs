@@ -155,7 +155,7 @@ internal sealed partial class WindowProbe
         await panel.Model.Registry.UpdatePreferencesAsync(p => p with { ScalePercent = 125, Theme = AppTheme.Light });
         checks.Add("M5 real 20-repository / 7-group layout including empty groups and long paths; official vector source icons; long-branch display injected as protocol sample without creating a branch; row menu after scroll; 800x600 viewport at 150% app scale with both scroll axes and reachable footer; Enter/cancel forms");
 
-        panel.WindowState = WindowState.Minimized;
+        panel.CollapsePanel();
 #if DEBUG
         const string configuration = "Debug";
 #else
@@ -164,9 +164,9 @@ internal sealed partial class WindowProbe
         var secondary = Start(Path.Combine(FindRoot(), "src", "RepoTracker.Desktop", "bin", configuration, "net10.0-windows", "RepoTracker.Desktop.exe"),
             "--profile", Path.Combine(outputDirectory, "profile"), "--minimized");
         await secondary.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
-        Require(secondary.ExitCode == 0 && panel.WindowState == WindowState.Minimized, "Repeated login startup activated the existing process.");
+        Require(secondary.ExitCode == 0 && !panel.IsVisible, "Repeated login startup activated the existing process.");
         panel.RestorePanel();
-        checks.Add("M5 real secondary --minimized process exits without activating the existing taskbar window");
+        checks.Add("Real secondary --minimized process exits without showing the hidden panel");
     }
     private static void Toggle(CheckBox box)
     {

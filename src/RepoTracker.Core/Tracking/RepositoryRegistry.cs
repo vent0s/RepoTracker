@@ -68,12 +68,16 @@ public sealed class RepositoryRegistry(IConfigurationStore store, IRepositoryLoc
     public async Task<AddRepositoryResult> AddAsync(string path, Guid? groupId, CancellationToken cancellationToken = default)
         => (await AddPathsAsync([path], groupId, false, cancellationToken))[0];
 
+    /// <summary>Add one explicitly selected nested worktree in its tracked parent's current group.</summary>
+    public async Task<AddRepositoryResult> AddChildAsync(Guid parentId, string path, CancellationToken cancellationToken = default)
+        => (await AddPathsAsync([path], null, false, cancellationToken, parentId))[0];
+
     /// <summary>Revalidate discovered worktree roots and publish the entire batch in one transaction.</summary>
     public Task<IReadOnlyList<AddRepositoryResult>> AddManyAsync(IEnumerable<string> paths, Guid? groupId,
         CancellationToken cancellationToken = default) => AddPathsAsync(paths, groupId, true, cancellationToken);
 
     private async Task<IReadOnlyList<AddRepositoryResult>> AddPathsAsync(IEnumerable<string> paths, Guid? groupId, bool requireRoots,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? parentId = null)
     {
         EnsureWritable();
         var locations = new List<RepositoryLocation>();
@@ -89,6 +93,18 @@ public sealed class RepositoryRegistry(IConfigurationStore store, IRepositoryLoc
         await ChangeAsync(state =>
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (parentId is { } id)
+            {
+                var parent = FindRepository(state, id);
+                foreach (var location in locations)
+                {
+                    var directory = Path.GetDirectoryName(location.WorktreeRoot);
+                    while (directory is not null && !SamePath(Path.TrimEndingDirectorySeparator(directory), parent.WorktreeRoot))
+                        directory = Path.GetDirectoryName(directory);
+                    if (directory is null) throw new TrackerException(Text.Get("Repository.InvalidChild"));
+                }
+                groupId = parent.GroupId;
+            }
             var repositories = state.Repositories.ToBuilder();
             var fellBack = groupId is not null && !state.Groups.Any(group => group.Id == groupId);
             foreach (var location in locations)

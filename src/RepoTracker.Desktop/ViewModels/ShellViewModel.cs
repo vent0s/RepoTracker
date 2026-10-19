@@ -19,13 +19,39 @@ public sealed class RepositoryRow(TrackedRepository repository) : ObservableObje
     public bool IsExpanded => !Repository.ChildrenCollapsed;
     public string ExpansionGlyph => IsExpanded ? "\uE70D" : "\uE76C";
     public string ChildrenText => HasChildren ? Text.Format("Repository.ChildrenCount", DescendantCount) : "";
+    public string ChildrenLabel => Text.Format("Repository.ChildrenShort", DescendantCount);
+    public DescendantStatus Descendants { get; private set; } = new();
+    public string DescendantTooltip => Text.Format("Status.ChildrenDetails", Descendants.Total, Descendants.Modified,
+        Descendants.Ahead, Descendants.Behind, Descendants.Problems, Descendants.Unknown, Descendants.NoUpstream, Descendants.NoComparison);
+    public IReadOnlyList<StatusBadge> DescendantBadges
+    {
+        get
+        {
+            var badges = new List<StatusBadge>();
+            if (Descendants.WorktreesClean) badges.Add(new("✓", Text.Get(Descendants.IsClear ? "Status.ChildrenClear" : "Status.ChildrenWorktreesClean"), "Success"));
+            if (Descendants.Modified > 0) badges.Add(new("●" + Descendants.Modified, Text.Format("Status.ChildrenModified", Descendants.Modified), "Warning"));
+            if (Descendants.Ahead > 0) badges.Add(new("↑" + Descendants.Ahead, Text.Format("Status.ChildrenAhead", Descendants.Ahead), "Accent"));
+            if (Descendants.Behind > 0) badges.Add(new("↓" + Descendants.Behind, Text.Format("Status.ChildrenBehind", Descendants.Behind), "Warning"));
+            if (Descendants.Problems > 0) badges.Add(new("!" + Descendants.Problems, Text.Format("Status.ChildrenProblems", Descendants.Problems), "Error"));
+            if (Descendants.Unknown > 0) badges.Add(new("?" + Descendants.Unknown, Text.Format("Status.ChildrenUnknown", Descendants.Unknown)));
+            if (Descendants.NoUpstream > 0) badges.Add(new("—" + Descendants.NoUpstream, Text.Format("Status.ChildrenNoUpstream", Descendants.NoUpstream)));
+            if (Descendants.NoComparison > 0) badges.Add(new("—" + Descendants.NoComparison, Text.Format("Status.ChildrenNoComparison", Descendants.NoComparison)));
+            return badges;
+        }
+    }
+    public void ApplyDescendants(DescendantStatus summary)
+    {
+        if (Descendants == summary) return;
+        Descendants = summary;
+        Notify(nameof(Descendants)); Notify(nameof(DescendantBadges)); Notify(nameof(DescendantTooltip));
+    }
     public string ExpansionAccessibleName => Text.Format(IsExpanded ? "Repository.CollapseChildren" : "Repository.ExpandChildren", Name, DescendantCount);
-    public System.Windows.Thickness TreePadding => new(6 + Depth * 16, 0, 22, 0);
+    public System.Windows.Thickness TreePadding => new(6 + Depth * 20, 0, 22, 0);
     public void ApplyHierarchy(RepositoryTreeRow row)
     {
         ParentId = row.ParentId; Depth = row.Depth; DescendantCount = row.DescendantCount; DisplayPath = row.DisplayPath;
         foreach (var property in new[] { nameof(ParentId), nameof(Depth), nameof(DescendantCount), nameof(DisplayPath), nameof(HasChildren),
-            nameof(IsExpanded), nameof(ExpansionGlyph), nameof(ChildrenText), nameof(ExpansionAccessibleName), nameof(TreePadding) }) Notify(property);
+            nameof(IsExpanded), nameof(ExpansionGlyph), nameof(ChildrenText), nameof(ChildrenLabel), nameof(ExpansionAccessibleName), nameof(TreePadding) }) Notify(property);
     }
     private bool highlighted;
     public bool IsHighlighted { get => highlighted; set => Set(ref highlighted, value); }
@@ -68,7 +94,8 @@ public sealed class RepositoryRow(TrackedRepository repository) : ObservableObje
     } : Status.Data is not { } data ? Status.IsChecking ? Text.Get("Status.Checking") : Text.Get("Status.Pending")
         : data.Conflicts > 0 ? Text.Format("Status.Conflicts", data.Conflicts) : data.IsDirty ? Text.Get("Status.Dirty") : Text.Get("Status.Clean");
     public string ComparisonText => Status.Error != StatusError.None ? Text.Get("Status.Retry") : Status.Data is not { } data ? Text.Get("Status.NotRead")
-        : data.HeadKind == HeadKind.Unborn ? Text.Get("Status.NoCommits") : data.Upstream is null ? Text.Get("Status.NoUpstream")
+        : data.HeadKind == HeadKind.Unborn ? Text.Get("Status.NoCommits") : data.HeadKind == HeadKind.Detached ? Text.Get("Status.DetachedComparison")
+        : data.Upstream is null ? Text.Get("Status.NoUpstream")
         : data.Ahead is null || data.Behind is null ? Text.Get("Status.UnknownCounts")
         : data.Ahead == 0 && data.Behind == 0 ? Text.Get("Status.InSync") : $"↑{data.Ahead}  ↓{data.Behind}";
     public string FreshnessText => Status.SucceededAt is { } time
@@ -76,22 +103,50 @@ public sealed class RepositoryRow(TrackedRepository repository) : ObservableObje
         : Status.CheckedAt is { } attempted ? Text.Get("Status.AttemptPrefix") + attempted.ToLocalTime().ToString("HH:mm:ss") : "";
     public string StatusTone => Status.Error != StatusError.None || Status.Data?.Conflicts > 0 ? "Error"
         : Status.Data is null ? "Muted" : Status.Data.IsDirty ? "Warning" : "Success";
-    public string StatusTooltip => (Status.Message is { } message ? message + "\n" : "") +
+    public IReadOnlyList<StatusBadge> StatusBadges
+    {
+        get
+        {
+            var glyph = Status.Error != StatusError.None ? "!" : Status.Data is not { } data ? (Status.IsChecking ? "…" : "?")
+                : data.Conflicts > 0 ? "!" + BadgeCount(data.Conflicts) : data.IsDirty ? "●" : "✓";
+            var badges = new List<StatusBadge> { new(glyph, StatusText, StatusTone, StatusTooltip) };
+            if (Status.Error != StatusError.None || Status.Data is not { } status) return badges;
+            if (status.HeadKind != HeadKind.Branch || status.Upstream is null)
+                badges.Add(new("—", ComparisonText, Details: StatusTooltip));
+            else
+            {
+                badges.Add(new("↑" + (status.Ahead is { } up ? BadgeCount(up) : "?"), status.Ahead is { } ahead
+                    ? Text.Format("Status.AheadHint", ahead) : Text.Get("Status.UnknownCounts"), status.Ahead > 0 ? "Accent" : "Muted", StatusTooltip));
+                badges.Add(new("↓" + (status.Behind is { } down ? BadgeCount(down) : "?"), status.Behind is { } behind
+                    ? Text.Format("Status.BehindHint", behind) : Text.Get("Status.UnknownCounts"), status.Behind > 0 ? "Warning" : "Muted", StatusTooltip));
+            }
+            return badges;
+        }
+    }
+    private static string BadgeCount(int count) => count > 999 ? "999+" : count.ToString();
+    public string RemoteGlyph => !RemoteEnabled ? "" : Remote.IsChecking ? "…" : Remote.Outcome switch
+    {
+        RemoteOutcome.Success => "↻", RemoteOutcome.Never => "?", RemoteOutcome.Skipped => "—", _ => "!"
+    };
+    public string RemoteTone => Remote.IsChecking ? "Muted" : Remote.Outcome is RemoteOutcome.Authentication or RemoteOutcome.Offline
+        or RemoteOutcome.Timeout or RemoteOutcome.Failed ? "Error" : "Muted";
+    public string StatusTooltip => (Status.Data is { HeadKind: HeadKind.Branch, Upstream: null } ? Text.Get("Status.NoUpstreamHint") + "\n" : "") +
+        (Status.Message is { } message ? message + "\n" : "") +
         (Status.Data is { } data ? (Status.Error != StatusError.None ? Text.Get("Status.PreviousResult") : "") + Text.Format("Status.CountDetails", data.Staged, data.Unstaged, data.Untracked, data.Conflicts) +
             Text.Format("Status.BranchDetails", BranchText, BranchDetail, data.Upstream ?? Text.Get("Status.None")) : "") +
-        FreshnessText + "\n" + RemoteTooltip + (Status.Watching ? "" : Text.Get("Status.WatchHint"));
+        StatusText + " · " + ComparisonText + "\n" + FreshnessText + "\n" + RemoteTooltip + (Status.Watching ? "" : Text.Get("Status.WatchHint"));
 
     public void ApplyRemote(RemoteSnapshot remote, bool enabled, IEnumerable<SourceRule> rules)
     {
         Source = SourceRules.Match(Status.Remote, rules); Remote = remote; RemoteEnabled = enabled;
-        foreach (var property in new[] { nameof(SourceBadge), nameof(SourceIconKey), nameof(SourceTooltip), nameof(RemoteText), nameof(RemoteTooltip), nameof(StatusTooltip) }) Notify(property);
+        foreach (var property in new[] { nameof(SourceBadge), nameof(SourceIconKey), nameof(SourceTooltip), nameof(RemoteText), nameof(RemoteTooltip), nameof(StatusTooltip), nameof(StatusBadges), nameof(RemoteGlyph), nameof(RemoteTone), nameof(RemoteEnabled) }) Notify(property);
     }
 
     public void Apply(StatusSnapshot status)
     {
         if (status == Status) return;
         Status = status;
-        foreach (var property in new[] { nameof(Status), nameof(BranchText), nameof(BranchDetail), nameof(StatusText), nameof(ComparisonText), nameof(FreshnessText), nameof(StatusTone), nameof(StatusTooltip) }) Notify(property);
+        foreach (var property in new[] { nameof(Status), nameof(BranchText), nameof(BranchDetail), nameof(StatusText), nameof(ComparisonText), nameof(FreshnessText), nameof(StatusTone), nameof(StatusTooltip), nameof(StatusBadges) }) Notify(property);
     }
 }
 public sealed record GroupRow(Guid? Id, string Name, bool IsExpanded, IReadOnlyList<RepositoryRow> Repositories)
@@ -110,6 +165,7 @@ public sealed class ShellViewModel : ObservableObject
     private IReadOnlyList<GroupRow> groups = [];
     private Guid? highlightedId;
     private readonly Dictionary<Guid, RepositoryRow> rows = [];
+    private IReadOnlyList<RepositoryTreeRow> hierarchy = [];
     private readonly LocalStatusScheduler scheduler;
     private readonly RemoteScheduler remoteScheduler;
     public RepositoryRegistry Registry { get; }
@@ -178,13 +234,13 @@ public sealed class ShellViewModel : ObservableObject
             if (!rows.TryGetValue(repo.Id, out var row)) rows.Add(repo.Id, row = new(repo));
             row.Repository = repo; row.IsHighlighted = repo.Id == highlightedId;
         }
+        hierarchy = RepositoryHierarchy.Build(state.Repositories);
+        foreach (var item in hierarchy) rows[item.Repository.Id].ApplyHierarchy(item);
         GroupRow Group(Guid? id, string name, bool expanded)
         {
             var members = state.Repositories.Where(repo => repo.GroupId == id).ToArray();
-            var hierarchy = RepositoryHierarchy.Build(members);
-            foreach (var item in hierarchy) rows[item.Repository.Id].ApplyHierarchy(item);
             return new(id, name, expanded, members.Select(repo => rows[repo.Id]).ToArray())
-            { VisibleRepositories = hierarchy.Where(item => item.IsVisible).Select(item => rows[item.Repository.Id]).ToArray() };
+            { VisibleRepositories = hierarchy.Where(item => item.IsVisible && item.Repository.GroupId == id).Select(item => rows[item.Repository.Id]).ToArray() };
         }
         Groups = state.Groups.Select(group => Group(group.Id, group.Name, !group.Collapsed))
             .Append(Group(null, Text.Get("Group.Ungrouped"), !state.UngroupedCollapsed)).ToArray();
@@ -203,6 +259,7 @@ public sealed class ShellViewModel : ObservableObject
             row.Apply(statuses.GetValueOrDefault(row.Id) ?? new());
             row.ApplyRemote(remoteStatuses.GetValueOrDefault(row.Id) ?? new(), RemoteEnabled, Registry.State.Sources);
         }
+        foreach (var (id, summary) in DescendantStatus.Build(hierarchy, statuses)) rows[id].ApplyDescendants(summary);
         Notify(nameof(LocalCheckSummary));
         Notify(nameof(RemoteSummary)); Notify(nameof(RemoteEnabled));
     }

@@ -58,18 +58,17 @@ internal static class PackageProbe
             Phase("Add repository through the published window");
             Invoke(ById(panel, "ChooseFolder"));
             var entry = OwnedDialog(panel, "EntryDialog");
-            Require(((TogglePattern)ById(entry, "ScanChildrenOnAdd").GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState == ToggleState.On,
-                "Packaged Add did not enable child discovery by default.");
             ((ValuePattern)ById(entry, "EntryText").GetCurrentPattern(ValuePattern.Pattern)).SetValue(repository);
             Invoke(ById(entry, "Submit"));
-            var discovery = OwnedDialog(entry, "RepositoryDiscovery");
-            Wait(() => ById(discovery, "ImportRepositories").Current.IsEnabled, "Packaged default nested scan");
-            Require(discovery.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.AutomationIdProperty, "SelectRepository")).Count == 2,
-                "Packaged discovery did not find root and child.");
-            Invoke(ById(discovery, "ImportRepositories"));
+            Wait(() => panel.Current.IsEnabled && ReadState(statePath).GetProperty("repositories").GetArrayLength() == 1,
+                "Packaged Add imports only the selected root");
+            Invoke(ById(panel, "ChooseFolder"));
+            entry = OwnedDialog(panel, "EntryDialog");
+            ((ValuePattern)ById(entry, "EntryText").GetCurrentPattern(ValuePattern.Pattern)).SetValue(nested);
+            Invoke(ById(entry, "Submit"));
             Wait(() => panel.Current.IsEnabled && ReadState(statePath).GetProperty("repositories").GetArrayLength() == 2,
                 "Packaged parent and child imported through Add");
-            checks.Add("Published Add defaults to child discovery; root and nested repository selected and imported through the real preview window.");
+            checks.Add("Published Add imports only the entered root; manually adding its nested repository creates the hierarchy.");
             Wait(() => HasText(panel, "Detached HEAD") && HasText(panel, "Modified") && HasText(panel, "发布 fixture"), "Packaged real Git status");
             Require(HasText(panel, "子仓库 nested"), "Packaged new child was not visible.");
             Invoke(ById(panel, "ToggleRepositoryChildren"));
@@ -94,11 +93,10 @@ internal static class PackageProbe
 
             var before = File.ReadAllBytes(statePath);
             child = Start(relocatedExe, profile, minimized: true);
-            // Wait for a real top-level window before checking the startup state.
-            var minimizedPanel = FindPanel(child);
             WaitForTrayEvent(profile, "tray.registered", 3);
-            Require(((WindowPattern)minimizedPanel.GetCurrentPattern(WindowPattern.Pattern)).Current.WindowVisualState == WindowVisualState.Minimized,
-                "Packaged --minimized startup did not remain minimized.");
+            Require(!IsWindowVisible(FindPanelHandle(child)), "Packaged --minimized startup did not remain hidden.");
+            using (var secondary = Start(relocatedExe, profile))
+                Require(secondary.WaitForExit(10000) && secondary.ExitCode == 0, "Repeated launch did not restore hidden packaged app.");
             panel = Panel(child);
             Require(ById(panel, "Settings").Current.Name == "窗口设置", "Chinese satellite resources were not loaded after relocation.");
             Wait(() => HasText(panel, "分离 HEAD") && HasText(panel, "有修改") && HasText(panel, "发布 fixture"), "Relocated Chinese Git status");
@@ -159,22 +157,37 @@ internal static class PackageProbe
 
     private static AutomationElement FindPanel(Process process)
     {
-        AutomationElement? panel = null;
-        Phase("Find published main window");
+        return AutomationElement.FromHandle(FindPanelHandle(process));
+    }
+
+    private static nint FindPanelHandle(Process process)
+    {
+        nint panel = 0;
+        Phase("Find published main window, including hidden or owned tool windows");
         Wait(() =>
         {
             Require(!process.HasExited, "Published app exited before its window appeared.");
-            process.Refresh();
-            var handle = process.MainWindowHandle;
-            panel = handle == 0 ? null : AutomationElement.FromHandle(handle);
-            return panel is not null;
+            EnumWindows((handle, _) =>
+            {
+                GetWindowThreadProcessId(handle, out var processId);
+                if (processId != process.Id) return true;
+                var title = new System.Text.StringBuilder(128);
+                GetWindowText(handle, title, title.Capacity);
+                if (title.ToString() != "RepoTracker") return true;
+                panel = handle;
+                return false;
+            }, 0);
+            return panel != 0;
         }, "Published main window");
-        return panel!;
+        var style = GetWindowLongPtr(panel, -20).ToInt64();
+        Require((style & 0x80) != 0 && (style & 0x40000) == 0, "Published panel is eligible for a taskbar entry.");
+        return panel;
     }
 
     private static AutomationElement Panel(Process process)
     {
         var panel = FindPanel(process);
+        Wait(() => IsWindowVisible(panel.Current.NativeWindowHandle), "Published panel visible after launch or IPC");
         Phase("Restore published main window");
         ((WindowPattern)panel.GetCurrentPattern(WindowPattern.Pattern)).SetWindowVisualState(WindowVisualState.Normal);
         Phase("Focus published main window");
@@ -302,6 +315,12 @@ internal static class PackageProbe
     private static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
     private static void Phase(string message) => File.WriteAllText(phasePath, message);
     [DllImport("user32.dll")] private static extern nint GetWindow(nint handle, uint command);
+    private delegate bool WindowCallback(nint window, nint data);
+    [DllImport("user32.dll")] private static extern bool EnumWindows(WindowCallback callback, nint data);
+    [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(nint window, out uint processId);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetWindowText(nint window, System.Text.StringBuilder text, int length);
+    [DllImport("user32.dll")] private static extern bool IsWindowVisible(nint window);
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")] private static extern nint GetWindowLongPtr(nint window, int index);
     [DllImport("user32.dll")] private static extern bool SetForegroundWindow(nint handle);
     [StructLayout(LayoutKind.Sequential)]
     private struct NativeRect

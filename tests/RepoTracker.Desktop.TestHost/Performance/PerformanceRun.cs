@@ -22,7 +22,12 @@ internal static class PerformanceRun
         // Build fixtures before assigning this process to the accounting job.
         PerformanceFixture.CreateAsync(directory, ((IPEndPoint)endpoint.LocalEndpoint).Port).GetAwaiter().GetResult();
         using var accounting = new JobAccounting();
-        var application = new App { StartupRegistrationFactory = profile => new FixtureStartupRegistration(profile) };
+        var application = new App
+        {
+            StartupRegistrationFactory = profile => new FixtureStartupRegistration(profile),
+            EnableTrayIcon = false,
+            ShellAppId = "Septim.RepoTracker.TestHost"
+        };
         application.InitializeComponent();
         application.DispatcherUnhandledException += (_, e) =>
         {
@@ -40,6 +45,7 @@ internal static class PerformanceRun
                     await Task.Delay(50);
                 }
                 var window = (MainWindow)application.MainWindow;
+                if (application.TrayIcon is not null) throw new InvalidOperationException("Performance fixtures must not register a tray icon.");
                 await window.Initialization;
                 await Task.Run(() => MeasureAsync(window, accounting, directory, smoke));
                 application.Shutdown();
@@ -91,7 +97,7 @@ internal static class PerformanceRun
                 await window.Dispatcher.InvokeAsync(async () =>
                 {
                     await window.Model.Registry.SetRemoteEnabledAsync(false);
-                    window.WindowState = WindowState.Minimized;
+                    window.CollapsePanel();
                 }).Task.Unwrap();
             monitor.SetPhase(phase);
             await File.WriteAllTextAsync(Path.Combine(directory, "phase.pending"), phase);
@@ -104,8 +110,10 @@ internal static class PerformanceRun
                 var ping = Stopwatch.StartNew();
                 await window.Dispatcher.InvokeAsync(() =>
                 {
-                    var expectedState = phase is "warmup" or "minimized" or "recovery" ? WindowState.Minimized : WindowState.Normal;
-                    if (window.WindowState != expectedState || window.Model.Registry.State.RemoteEnabled != (phase == "remote-failure"))
+                    // Retain the historical phase name; minimized now means hidden to the tray.
+                    var expectedVisible = phase is not ("warmup" or "minimized" or "recovery");
+                    if (window.IsVisible != expectedVisible || window.WindowState != WindowState.Normal ||
+                        window.Model.Registry.State.RemoteEnabled != (phase == "remote-failure"))
                         throw new InvalidOperationException("Window or remote state changed during the performance phase.");
                 }, DispatcherPriority.Input).Task.WaitAsync(TimeSpan.FromSeconds(10));
                 samples.Add(ReadSample(process, accounting, watch.Elapsed.TotalSeconds, ping.Elapsed.TotalMilliseconds));

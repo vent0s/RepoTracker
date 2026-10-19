@@ -8,7 +8,7 @@ public sealed class WindowLifecycleTests(ITestOutputHelper output)
 {
     [Fact]
     [Trait("Category", "Desktop")]
-    public async Task RealWindowsRespectTaskbarFocusAndSingleInstanceContracts()
+    public async Task RealWindowsRespectTrayOnlyFocusAndSingleInstanceContracts()
     {
         var root = new DirectoryInfo(AppContext.BaseDirectory);
         while (root is not null && !File.Exists(Path.Combine(root.FullName, "RepoTracker.slnx"))) root = root.Parent;

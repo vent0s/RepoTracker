@@ -87,6 +87,74 @@ public sealed class RepositoryRegistryTests
     }
 
     [Fact]
+    public async Task ManualChildUsesParentGroupAndDuplicatesKeepTheirIdentityAndMembership()
+    {
+        var store = new MemoryStore(new()); var registry = await Create(store);
+        var group = await registry.CreateGroupAsync("Parent group");
+        var parent = (await registry.AddAsync(@"E:\fixtures\parent", group)).Repository;
+        var child = await registry.AddChildAsync(parent.Id, @"E:\fixtures\parent\packages\child");
+        Assert.Equal(group, child.Repository.GroupId);
+        Assert.Equal(parent.Id, RepositoryHierarchy.Build(registry.State.Repositories).Single(row => row.Repository.Id == child.Repository.Id).ParentId);
+        await registry.MoveAsync(child.Repository.Id, null);
+        var saves = store.SaveCount;
+        var duplicate = await registry.AddChildAsync(parent.Id, @"e:\FIXTURES\PARENT\packages\CHILD");
+        Assert.True(duplicate.AlreadyTracked);
+        Assert.Equal(child.Repository.Id, duplicate.Repository.Id);
+        Assert.Null(duplicate.Repository.GroupId);
+        Assert.Equal(saves, store.SaveCount);
+        Assert.Equal(2, (await Create(store)).State.Repositories.Length);
+    }
+
+    [Theory]
+    [InlineData(@"E:\fixtures\parent")]
+    [InlineData(@"E:\fixtures\parent-other\child")]
+    [InlineData(@"E:\fixtures\sibling")]
+    [InlineData(@"E:\fixtures")]
+    public async Task ManualChildRejectsWorktreesOutsideTheParent(string path)
+    {
+        var store = new MemoryStore(new()); var registry = await Create(store);
+        var parent = (await registry.AddAsync(@"E:\fixtures\parent", null)).Repository;
+        var before = registry.State;
+        await Assert.ThrowsAsync<TrackerException>(() => registry.AddChildAsync(parent.Id, path));
+        Assert.Same(before, registry.State);
+        Assert.Equal(1, store.SaveCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ManualChildRechecksParentAfterPathResolution(bool removeParent)
+    {
+        var parent = Repo(0, null);
+        var resolved = new TaskCompletionSource<RepositoryLocation>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var store = new MemoryStore(new() { Repositories = [parent] });
+        var registry = await Create(store, new Locator(_ => resolved.Task));
+        var add = registry.AddChildAsync(parent.Id, parent.WorktreeRoot + @"\child");
+        var group = await registry.CreateGroupAsync("Moved parent");
+        if (removeParent) await registry.RemoveAsync(parent.Id);
+        else await registry.MoveAsync(parent.Id, group);
+        resolved.SetResult(new(parent.WorktreeRoot + @"\child", @"E:\git", @"E:\git"));
+        if (removeParent)
+        {
+            await Assert.ThrowsAsync<TrackerException>(() => add);
+            Assert.Empty(registry.State.Repositories);
+        }
+        else Assert.Equal(group, (await add).Repository.GroupId);
+    }
+
+    [Fact]
+    public async Task ManualChildSaveFailureLeavesStateUnchanged()
+    {
+        var parent = Repo(0, null);
+        var store = new MemoryStore(new() { Repositories = [parent] });
+        var registry = await Create(store); var before = registry.State;
+        store.Fail = true;
+        await Assert.ThrowsAsync<IOException>(() => registry.AddChildAsync(parent.Id, parent.WorktreeRoot + @"\child"));
+        Assert.Same(before, registry.State);
+        Assert.Same(before, store.State);
+    }
+
+    [Fact]
     public async Task BatchImportDeduplicatesAndPreservesExistingMembershipInOneSave()
     {
         var group = Guid.NewGuid(); var repo = Repo(0, group);

@@ -10,7 +10,11 @@ Git 是外部 CLI，不随 ZIP 分发；Windows 的 Segoe UI、Microsoft YaHei U
 
 ## 项目图形
 
-`Themes/Controls.xaml` 的 AppIcon，以及 `Themes/SourceIcons.xaml` 的 Git、Server、Unknown 几何图形由本项目绘制。应用图标不使用 GitHub 或 GitLab 的标志。按钮使用系统 Segoe MDL2 Assets 字形或本项目的简单 Path；没有额外打包图片或字体库。当前 exe 未设置独立的 Explorer 文件图标，窗口图标由 WPF DrawingImage 提供。
+`Themes/Controls.xaml` 的 AppIcon，以及 `Themes/SourceIcons.xaml` 的 Git、Server、Unknown 几何图形由本项目绘制。应用图标不使用 GitHub 或 GitLab 的标志。按钮使用系统 Segoe MDL2 Assets 字形或本项目的简单 Path；没有额外打包图片或字体库。exe 和 Setup 的 ICO 从同一 AppIcon 导出，窗口继续使用 WPF DrawingImage。
+
+## 安装工具
+
+Windows Setup 由 [Inno Setup 7.1.0](https://jrsoftware.org/) 生成。Copyright (C) 1997–2026 Jordan Russell；Portions Copyright (C) 2000–2026 Martijn Laan。安装器保留其内置版权信息，编译器不随 RepoTracker 分发。Inno Setup 的许可见[项目原文](https://github.com/jrsoftware/issrc/blob/is-7_1_0/license.txt)。
 
 ## GitHub Octicons — mark-github-16
 

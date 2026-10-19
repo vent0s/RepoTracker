@@ -1,162 +1,133 @@
 # RepoTracker
 
-一个 Windows 桌面常驻的 Git 仓库状态跟踪器：以任务栏中的应用按钮为入口，直接点击展开仓库面板，一览本机所有被跟踪仓库的来源（GitHub / GitLab / 自建 / 未知）、当前分支与工作区状态（未提交变更、未推送提交、未拉取提交），并提供「打开所在文件夹」「移除跟踪」两个快捷操作。
+**Your local Git repositories, at a glance.**
 
-> 本仓库本身托管在自建 GitLab 上，因此"用户自定义已知来源"从一开始就是刚需，而非锦上添花。
+English · [简体中文](README.zh-CN.md)
 
-接续工作先看[当前关注](当前关注-repotracker.md)；任务状态与验收边界以[开发里程碑](devSchedule/桌面应用开发/doc/里程碑-桌面应用开发.md)为准。
+RepoTracker is a Windows system tray app that keeps repository status within reach. See branches, uncommitted changes, and commits ahead of or behind the locally known upstream, grouped the way you work.
 
-## 定位与原则
+![RepoTracker in English, showing grouped repositories and nested repository status](doc/images/main-en.png)
 
-- **只查看状态**：RepoTracker 不代替用户执行 commit / push / pull，不改工作区、分支或 upstream。可选远程 fetch 会更新 Git 元数据，开启前明确说明作用范围。
-- **手动添加**：选择仓库后默认查找其下的子仓库，预览并勾选后批量加入跟踪；可取消“同时查找子仓库”只添加当前仓库。
-- **常驻但要轻**：应用全天挂在后台，内存占用、CPU 空转、磁盘 IO 都必须克制。状态采集分「本地 / 远程」两层，频率与触发方式不同（见下文）。
+*Actual application UI with fictional repositories and sample statuses. Remote checks are off in these screenshots.*
 
-## 功能特性
+## What it does
 
-### 跟踪列表（主面板）
+- Tracks repositories you add, including nested repositories, initialized submodules, and linked worktrees.
+- Shows GitHub, GitLab, and custom host icons alongside branch and status indicators.
+- Organizes repositories into groups and expandable directory trees. Collapsed parents still show a summary of their tracked descendants.
+- Refreshes local status in the background; optional remote checks fetch updated information.
+- Opens repository folders and removes entries from the tracker without deleting repository files.
+- Offers dark and light themes, 100% / 125% / 150% interface scaling, and English / Simplified Chinese.
 
-每个 repo 一行，从左到右：
+RepoTracker does not run commit, push, pull, or stash, or change your working files, branches, or upstream configuration. **Remote checks are off by default.** Enabling them allows fetch operations that download Git objects and update Git metadata, including remote-tracking refs.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ [来源icon] repo名称        分支名   ●脏 ▲2未推 ▼5未拉   [📁][✕] │
-│ [来源icon] repo名称        分支名   ✓干净                [📁][✕] │
-│ [?]        repo名称        (无上游)                      [📁][✕] │
-└─────────────────────────────────────────────────────────────┘
-  位于任务栏上方，点击任务栏应用按钮展开；收起后按钮仍保留；底部为「+ 添加仓库」入口
-```
+## Install
 
-- **来源 icon**：GitHub / GitLab 官方图标；自建实例由用户配置后显示自定义图标；无法匹配任何已知来源时显示问号图标。
-- **状态徽标**：未提交变更（脏）、未推送提交数（ahead）、未拉取提交数（behind）。
-- **快捷操作**（暂只规划这两个）：
-  - 📁 打开 repo 所在文件夹（资源管理器）；
-  - ✕ 从跟踪器移除该 repo（仅解除跟踪，不删文件）。
+Check [GitHub Releases](https://github.com/vent0s/RepoTracker/releases) for published Windows x64 builds. Until the first release is available, use the [source build instructions](#build-from-source).
 
-### 状态模型（两层分离）
+| Download | Use it for |
+| --- | --- |
+| `RepoTracker-<version>-win-x64-Setup.exe` | Recommended installation for the current Windows user, with a Start menu entry, upgrades, and an uninstaller. |
+| `RepoTracker-<version>-win-x64.zip` | Portable use: extract the **entire** ZIP to a stable folder and run `RepoTracker.Desktop.exe`. |
+| Matching `.sha256` file | Verify the downloaded package with `Get-FileHash <file> -Algorithm SHA256`. |
 
-| 层级 | 内容 | 获取成本 | 更新策略 |
-|------|------|----------|----------|
-| 本地状态 | 当前分支、是否有未提交变更、相对本地 remote-tracking ref 的 ahead/behind | 低（纯本地 IO） | 高频轮询 + 文件系统事件触发 |
-| 远程状态 | fetch 后基于本地已知上游重新计算的 ahead/behind 快照 | 高（网络 IO、可能要求凭证） | 低频轮询、错峰执行、失败静默容忍 |
+You need **Windows x64** and [Git for Windows](https://git-scm.com/downloads/win) available on `PATH`. Check with `git --version`; restart RepoTracker if you have just installed Git. Release packages include the .NET / WPF runtime, so a separate .NET installation is not needed to run them.
 
-远程层首次启动默认关闭，由用户主动开启；只允许受约束的 fetch 检查。fetch 不改工作区文件，但会下载对象和更新远程跟踪引用等 Git 元数据，不属于严格只读。失败（离线、凭证失效）时保留上次已知状态并标注「数据截至 HH:MM」，本地检查继续，不弹凭据窗口。
+Current validation covers Windows 10 x64 on the development machine. Windows 11 and physical high / mixed DPI displays still need validation; see the [compatibility record (Chinese)](doc/兼容性与发布说明.md). Packages are currently unsigned, so Windows may identify the publisher as unknown.
 
-### 手动分组
+## Get started
 
-支持用户按工作、个人、工具等用途手动归类仓库。采用一层分组，每个仓库归属一个分组；未指定时放入系统默认的「未分组」。分组只组织列表，不移动目录、不改 Git 配置，也不影响来源识别与状态采集。
+1. Install and launch RepoTracker from the Start menu, or run the extracted portable EXE.
+2. Click **Add repository** and browse to a local Git working tree, or paste its folder path. Optionally select a group, then click **Add**.
+3. Read the branch and status indicators. Hover over an indicator for details and the time of the last check.
+4. Collapse the panel when you are done. Local checks continue in the background. Click the tray icon to open it again; right-click it for settings or exit.
 
-- 新建、重命名、删除自定义分组；名称去除首尾空白后为 1–30 个字符，同名不能重复。
-- 在仓库行的分组操作中选择目标分组；添加仓库时可选择分组，默认未分组。
-- 分组标题显示仓库数，点击展开或折叠；折叠只隐藏列表内容，后台检查照常进行。
-- 删除分组时说明受影响仓库数，确认后把仓库移回未分组，保留跟踪记录与本地文件。
-- 未分组不可重命名或删除，始终排在最后；自定义分组按创建顺序显示，排序与嵌套暂不纳入首轮。
+![Add repository dialog with a sample folder path and group selector](doc/images/add-repository-en.png)
 
-2026-10-16 用户已确认任务栏与手动分组方案，手动分组纳入首个可用版本；当前已实现仓库添加、手动分组、跨重启恢复及本地状态持续检查。
+The panel has no taskbar or Alt+Tab entry. If the tray icon is hidden, look in Windows' tray overflow menu and choose to keep it visible. Turn on **Keep open** if you want the panel to remain visible when another app gets focus. Use **Exit** to stop RepoTracker; collapsing the panel leaves it running.
 
-### 界面语言
+### Read the status
 
-支持简体中文和 English，默认跟随启动时的 Windows 显示语言；未支持的语言回退 English。可在“设置 → 检查与窗口 → 界面语言”选择跟随系统或手动语言，保存后下次启动生效。旧配置自动使用跟随系统，仓库、分支、自定义分组与来源名称保持原样。具体行为见[交互设计](doc/交互设计.md#界面语言)。
+| Indicator | Meaning |
+| --- | --- |
+| `✓` | The working tree is clean. This alone does not mean the branch is up to date with the remote server. |
+| `●` | There are uncommitted changes. |
+| `↑n` | The branch is ahead of its locally known upstream by `n` commits. |
+| `↓n` | The branch is behind its locally known upstream by `n` commits. |
+| `!` | A conflict or check problem; hover for the cause. |
+| `?` | Complete status is not available yet. |
+| `—` | There is no upstream or no branch comparison is available, such as detached HEAD or a repository without commits. |
 
-### 来源识别
+`✓` and `—` can appear together: the working tree is clean, but no comparison target is available. A branch without an upstream may still belong to a repository with a remote.
 
-1. 读取 repo 的 remote URL（优先 `origin`）；
-2. 与用户配置的「已知来源」列表匹配（按 host / host 通配符）；
-3. 内置 `github.com` / `gitlab.com` 两个默认规则，用户可增删自建 GitLab / Gitea / 其他 forge 的域名规则并指定图标；
-4. 无匹配 → 未知来源图标。
+The summary beneath a parent counts **repositories**, not commits. For example, `Children 2 · ●1 ↑1 ↓1` means two tracked descendants, one with changes, one ahead, and one behind. The indicators on each repository's own row count its commits separately.
 
-### 添加 / 移除仓库
+### Groups and nested repositories
 
-- 添加：选择文件夹 → 校验其为 git 仓库 → 读 remote URL → 识别来源 → 入列。
-- 子仓库：点击“添加”默认扫描所选仓库，发现子仓库后显示勾选预览；未发现子仓库且扫描完整时直接加入。已有仓库的更多菜单中也可选择“扫描并选择子仓库…”。每个仓库独立显示状态，重复添加父仓库可补入尚未跟踪的子仓库。
-- 同一分组内按目录关系展示父子仓库；点击仓库左侧箭头展开或收起，折叠状态跨重启保存。子仓库名称保留中间目录相对路径，状态列仍逐仓库独立显示。移组或移除只作用于选中的仓库，其余记录自动调整到同组最近祖先或组顶层。
-- 扫描包括普通嵌套仓库、已初始化的 submodule 和目录内的 linked worktree；跳过 `.git` 元数据、目录链接和未初始化子模块。扫描显示进度、可取消，不执行 fetch 或 pull；约 30 秒或达到数量上限时停止继续遍历并保留已发现结果，权限错误与不完整范围会明确提示。
-- 移除：从列表删除记录，不动仓库本体。
-- 容错：repo 目录被移动 / 删除、磁盘卸载时，行内显示「不可达」状态而非报错弹窗。
+Use **New group** to organize your list. A repository's **More** menu lets you move it to a group or choose **Add nested repository…**. Add each child explicitly; RepoTracker does not scan folders or initialize submodules. Adding an already tracked working tree locates the existing entry instead of duplicating it.
 
-## 性能策略
+Repositories in the same group follow their directory hierarchy. Click the arrow beside a parent to expand or collapse its descendants. Removing an entry only stops tracking that repository; it does not delete files or remove other tracked entries. Deleting a group moves its repositories to **Ungrouped**.
 
-常驻应用的状态采集必须做明确约束：
+### Settings, language, and remote checks
 
-- **分层频率**：本地状态默认 ~15s 一轮（可配置），远程 fetch 默认 ~10min 一轮（可配置 / 可关）。
-- **事件驱动补充**：监听工作区与 Git 元数据变化，处理 worktree 的 gitdir / commondir，并保留周期轮询兜底；只监听 `.git` 不能覆盖未提交文件修改。
-- **错峰与限流**：多 repo 检查在时间窗口内打散；本地检查并发上限初始为 2，远程按 commonDir 串行；单次调用带超时与取消。
-- **无上游 / detached HEAD / 非 git 目录**均视为正常状态展示，不产生异常路径。
-- 空闲时可整体暂停（可选：检测到全屏应用 / 系统睡眠恢复后重新对齐）。
+Open **Settings → Checks and window** to change local / remote check intervals, theme, scaling, language, and login startup. Local checks default to every 15 seconds. When enabled, remote checks default to every 10 minutes.
 
-## 明确的非目标（当前版本不做）
+![Settings showing check intervals, appearance, and interface language](doc/images/settings-en.png)
 
-- 不执行 pull / push / commit / stash，不修改工作区内容、分支或 upstream；可选 fetch 仅按限定范围更新远程数据；
-- 不自动扫描磁盘发现仓库；
-- 不展示提交历史 / diff 详情（只是状态面板，不是 GUI 客户端）；
-- 不做多平台同步、账号登录、forge API 集成（issue / MR 列表等）。
+- **Language:** the app follows the Windows display language by default, with English fallback for unsupported languages. Choose **English** or **简体中文**, save the language preference, then exit and reopen the app. Documentation defaults to English independently of this setting.
+- **Remote checks:** enable them only when you want RepoTracker to fetch. With them off, ahead / behind values use information already present locally and may lag behind the server. Set up Git authentication outside RepoTracker; it does not open credential prompts. A failed remote check keeps the last known result while local checks continue.
+- **Source rules:** use this settings tab to add a self-hosted Git service's hostname or wildcard pattern and select an icon.
+- **Login startup:** off by default and configured separately on each computer. Scroll down in **Checks and window** to enable it. Login startup opens the tray icon without showing the panel.
 
-## UI 形态说明
+<details>
+<summary>Light theme</summary>
 
-采用标准 Windows 任务栏应用按钮，直接进入紧凑面板。2026-10-16 将主入口调整到任务栏应用区；2026-10-18 按用户要求补回通知区托盘，保留任务栏入口：
+![RepoTracker repository panel in the light theme](doc/images/main-light-en.png)
 
-- **任务栏应用按钮**在运行时保持可见，点击启动或恢复面板；面板前台时再次点击按系统行为最小化。收起使用最小化，不隐藏窗口后让任务栏按钮消失；
-- 默认面板在任务栏附近展开，可通过标题栏收起。失焦自动收起需排除应用自身的设置窗口、文件选择器和菜单；
-- 面板可「保持展开」，失焦后继续显示。这与把应用快捷方式固定到任务栏是两个不同操作；
-- 用户可通过 Windows 的固定入口保留任务栏快捷方式。退出应用会停止检查，已固定的快捷方式仍可再次启动；
-- 托盘图标在运行期间保留，单击或键盘激活打开面板，右键提供打开、设置与退出。Explorer 重建通知区后会重新登记，退出时清理；
-- 托盘是否收进右下角小箭头由 Windows 和用户决定；可将图标拖出来，或在 Windows 任务栏设置中开启显示。应用不强制改写系统的图标可见性偏好；
-- 设置、自启与退出仍可从应用内进入。自启默认关闭，需在每台电脑单独开启；普通任务栏按钮的右键菜单仍由 Windows 管理；
-- 原型表达任务栏附近展开的目标。跨屏、缩放、自动隐藏任务栏及精确图标锚定仍需桌面技术验证，不使用 Explorer 注入或旧 DeskBand 作为默认实现。
+</details>
 
-当前行为见[交互设计](doc/交互设计.md)，原型与验证历史见[设计工作区](devSchedule/技术选型与Penpot原型/doc/里程碑-技术选型与Penpot原型.md)。
+## Update, data, and removal
 
-## 技术选型
+**Installed version:** run a newer Setup to update the same installation directory. Your repository list and preferences are retained. There is no background update downloader. Uninstall through Windows Settings; external profile data and tracked repositories are retained.
 
-采用 **C# / WPF / .NET 10 / Git CLI**，按 MVVM 分层，JSON 保存仓库、分组与设置。Git 调用放在接口后的 Infrastructure 层；本轮不接入 libgit2。正式依据见[技术设计](doc/技术设计.md)，候选比较保留在[选型记录](devSchedule/技术选型与Penpot原型/doc/概述.md)。性能与发布包体积按实际测量记录。
+**Portable version:** exit the running app, extract the new ZIP into an empty folder, and launch it with the same profile. Keep the old folder as a backup. If you change the application path and use login startup, disable startup in the old copy and enable it in the new one. Before deleting a portable copy, disable its login startup and exit it.
 
-## 模块划分（规划）
+The default data directory is `%LOCALAPPDATA%\RepoTracker`; it contains `state.json`, its backup when present, and `logs/`. Keep profiles separate from application files. For an independent profile, launch with an absolute path:
 
-```
-┌ UI 层 ──────────────────────────────────────────┐
-│ 任务栏入口 │ 展开主面板(仓库列表) │ 设置窗 │ 添加向导 │
-└───────────────────┬─────────────────────────────┘
-                    │ 事件 / IPC
-┌ 应用核心 ──────────┴─────────────────────────────┐
-│ RepoRegistry   跟踪列表 CRUD + 持久化             │
-│ SourceResolver 来源识别（规则匹配 → icon）        │
-│ StatusEngine   状态采集与调度                     │
-│   ├ LocalChecker   本地状态（便宜、高频/事件触发）  │
-│   ├ RemoteFetcher  git fetch 策略（昂贵、低频错峰）│
-│   └ Scheduler      定时器 + FS 监听 + 并发上限     │
-│ ActionService  打开文件夹 / 移除跟踪              │
-│ ConfigStore    设置与已知来源配置                 │
-└───────────────────┬─────────────────────────────┘
-                    │
-          Git 访问层（CLI，接口隔离）
+```powershell
+.\RepoTracker.Desktop.exe --profile "E:\RepoTrackerProfiles\work"
 ```
 
-核心数据模型：
+Only one instance runs per profile. Launching again activates the existing instance, so exit the old version before switching portable builds. Back up your profile before manual migration or downgrade. More details: [installation and upgrades (Chinese)](doc/安装与升级.md), [portable guide (Chinese)](doc/便携版使用说明.md).
 
-- `Repo`：id、工作树 / Git 元数据路径、别名、可空 groupId、添加时间；remote URL 仅临时读取，来源按规则动态计算；
-- `RepoGroup`：稳定 id、名称、创建顺序、折叠状态；未分组用 groupId 为空表达，不依赖可编辑的名称作外键；
-- `Source`：id、名称、host 匹配规则、icon；
-- `RepoStatus`：分支、脏标记、ahead、behind、上次本地检查时间、上次 fetch 时间、错误态；
-- `Settings`：本地/远程轮询间隔、并发上限、开机自启、已知来源列表。
+## Troubleshooting
 
-## 配置与持久化
+- **Git is missing:** run `git --version` in a terminal and restart the app after updating `PATH`.
+- **A repository is unreachable:** check that its folder or drive is available. The tracked entry is retained.
+- **Ahead / behind seems stale:** fetch in your usual Git client, or enable RepoTracker's remote checks.
+- **Remote authentication fails:** verify access with your usual Git tools first, including SSH host confirmation where needed.
+- **A setting cannot be saved:** check profile write access. Keep a backup before investigating configuration files.
 
-- 跟踪列表、分组归属、折叠状态与设置持久化到用户目录（JSON 起步，规模上来再考虑 SQLite）；旧配置没有 groupId 时归入未分组，删除分组与归属回退作为一次原子保存；
-- 配置项：本地轮询间隔、远程 fetch 间隔与开关、并发上限、已知来源列表、自启、面板保持展开状态。
+Report problems through [GitHub Issues](https://github.com/vent0s/RepoTracker/issues), including the app version, Windows version, display scale, and reproduction steps. Logs are in the profile's `logs/` folder; review paths and other personal information before sharing them.
 
-## Roadmap
+## Build from source
 
-- [x] v0.1：任务栏应用按钮 + 展开/收起面板 + 手动添加/移除 + 手动分组及配置恢复 + 本地状态（脏 / ahead / behind）+ 打开文件夹（本机开发闭环，验收边界见里程碑）
-- [x] v0.2：来源识别与矢量图标、自定义已知来源配置（内置类型，许可见 THIRD-PARTY-NOTICES.md）
-- [x] v0.3：远程 fetch 层（错峰、离线容忍）、事件驱动刷新、性能基线（固定 20 仓库的本机范围及门槛复验通过，真实远端成功 fetch 等边界见验收记录）
-- [x] v0.4：面板保持展开模式、登录自启、多语言与安装交付（本机便携预览交付及核查完成；跨系统实机、真实登录和正式发行条件仍按验收边界记录）
+Use Windows, Git, and the **.NET SDK version pinned in [global.json](global.json)**. The desktop app uses C# and WPF.
 
-具体任务、依赖与完成条件统一在[桌面应用开发里程碑](devSchedule/桌面应用开发/doc/里程碑-桌面应用开发.md)跟踪。
+```powershell
+git clone https://github.com/vent0s/RepoTracker.git
+cd RepoTracker
+dotnet restore RepoTracker.slnx --locked-mode
+dotnet build RepoTracker.slnx --configuration Release --no-restore
+dotnet run --project src/RepoTracker.Desktop/RepoTracker.Desktop.csproj --configuration Release --no-build
+```
 
-## 开发状态
+From an existing source checkout, start at `dotnet restore`.
 
-M1–M5 原定本机范围与 2026-10-17 多语言增量已完成验证，当时 186 项功能测试通过。已支持仓库与手动分组、本地持续检查、来源规则和可选远程检查、完整设置、主题缩放及默认跟随系统的中英文显示。M6-01 已完成固定 20 仓库的性能基线与独立复验，两轮五分钟后台平均整机 CPU 1.05%–1.32%（含 Git），工作集峰值约 135 MiB；门槛及适用范围见[M6 性能验收](devSchedule/桌面应用开发/doc/M6性能验收.md)。M6 的打包和交付历史见[M6 打包验收](devSchedule/桌面应用开发/doc/M6打包验收.md)与[M6 交付验收](devSchedule/桌面应用开发/doc/M6交付验收.md)。
+For a portable package, run `pwsh -NoProfile -File ./publish-win-x64.ps1 -PortableOnly`. Omit `-PortableOnly` to also build Setup; this needs the Inno Setup version specified in the [installation guide](doc/安装与升级.md). Build output goes under `publish/`.
 
-2026-10-18 的 `0.4.0-preview.5` 改为添加时默认发现子仓库，并显示扫描进度与不完整结果；保留可展开目录层级、托盘入口及中英文支持，继续打包 .NET / WPF 10.0.13。更换新版前需从菜单退出旧实例；同一配置的第二次启动只会唤醒已有进程。自启仍需逐台电脑主动开启。操作与迁移见[便携版说明](doc/便携版使用说明.md)，检查入口见[开发与运行](doc/开发与运行.md)，实机边界见[兼容性与发布说明](doc/兼容性与发布说明.md)。
+Developer references: [development and verification (Chinese)](doc/开发与运行.md), [technical design (Chinese)](doc/技术设计.md), [interaction design (Chinese)](doc/交互设计.md), [screenshot generation](doc/images/README.md).
 
-10-17 使用本机 SDK 10.0.401 进行显式兼容构建，未改锁定的 SDK 10.0.201；功能 / 性能回归的 Runtime 10.0.12 与新版包的 10.0.13 验收分别记录。语言覆盖和证据见[M5 多语言验收](devSchedule/桌面应用开发/doc/M5多语言验收.md)。真实登录、物理高 DPI、Windows 11 与成功远端 fetch 等未覆盖边界见[M5 验收记录](devSchedule/桌面应用开发/doc/M5验收记录.md)。构建和测试见[开发与运行](doc/开发与运行.md)，任务状态只在[开发里程碑](devSchedule/桌面应用开发/doc/里程碑-桌面应用开发.md)维护。
+## License and acknowledgments
+
+A project license has not yet been selected. See [third-party notices](THIRD-PARTY-NOTICES.md) for dependency and icon attribution; those notices do not grant a license to RepoTracker itself.

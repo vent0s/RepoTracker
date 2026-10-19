@@ -157,11 +157,11 @@ internal sealed class TrayIcon : IDisposable
         retryTimer.Stop();
         retryTimer.Tick -= Retry;
         if (menuOpen) EndMenu();
-        Shell_NotifyIcon(2, ref data);
+        var removed = Shell_NotifyIcon(2, ref data);
         source.RemoveHook(WindowMessage);
         source.Dispose();
         if (data.Icon != 0) DestroyIcon(data.Icon);
-        log.Write("tray.removed");
+        log.Write(removed ? "tray.removed" : "tray.removal.failed");
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

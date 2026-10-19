@@ -49,6 +49,37 @@ public sealed class RepositoryDiscoveryTests
     }
 
     [Fact]
+    public async Task ManualChildValidatesTheRealWorktreeAndOnlyAddsTheSelectedRoot()
+    {
+        var area = new TestWorkspace();
+        var parent = await area.CreateDetachedRepositoryAsync("parent");
+        var child = await area.CreateDetachedRepositoryAsync(Path.Combine("parent", "packages", "中文 child"));
+        await area.CreateDetachedRepositoryAsync(Path.Combine("parent", "unselected"));
+        var linked = await area.CreateLinkedWorktreeAsync(parent, Path.Combine("parent", "linked"));
+        var ordinary = Directory.CreateDirectory(Path.Combine(parent, "ordinary")).FullName;
+        var childFolder = Directory.CreateDirectory(Path.Combine(child, "src")).FullName;
+        var before = Snapshot(parent);
+        var registry = new RepositoryRegistry(new JsonConfigurationStore(Path.Combine(area.Root, "profile")),
+            new GitRepositoryLocator(new GitProcess()), new NoFolders());
+        await registry.InitializeAsync();
+        var root = await registry.AddAsync(parent, null);
+        Assert.Single(registry.State.Repositories);
+        await Assert.ThrowsAsync<TrackerException>(() => registry.AddChildAsync(root.Repository.Id, ordinary));
+        var added = await registry.AddChildAsync(root.Repository.Id, child);
+        foreach (var path in new[] { childFolder, child.ToUpperInvariant(), child + Path.DirectorySeparatorChar, Path.Combine(child, "src", "..") })
+        {
+            var duplicate = await registry.AddChildAsync(root.Repository.Id, path);
+            Assert.True(duplicate.AlreadyTracked);
+            Assert.Equal(added.Repository.Id, duplicate.Repository.Id);
+        }
+        var worktree = await registry.AddChildAsync(root.Repository.Id, linked);
+        Assert.NotEqual(root.Repository.Id, worktree.Repository.Id);
+        Assert.Equal(root.Repository.CommonDir, worktree.Repository.CommonDir);
+        Assert.Equal(3, registry.State.Repositories.Length);
+        Assert.Equal(before, Snapshot(parent));
+    }
+
+    [Fact]
     public async Task MissingGitMissingDirectoryAndNonRepositoryLeaveRegistryEmpty()
     {
         var area = new TestWorkspace();

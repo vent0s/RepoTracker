@@ -7,14 +7,16 @@ public sealed class AutoCollapseController : IDisposable
 {
     private readonly Window window;
     private readonly Func<bool> keepExpanded;
+    private readonly Action collapse;
     private readonly DispatcherTimer timer;
     private int suspensions;
     public bool IsSuspended => suspensions > 0;
 
-    public AutoCollapseController(Window window, Func<bool> keepExpanded)
+    public AutoCollapseController(Window window, Func<bool> keepExpanded, Action collapse)
     {
         this.window = window;
         this.keepExpanded = keepExpanded;
+        this.collapse = collapse;
         timer = new DispatcherTimer(TimeSpan.FromMilliseconds(120), DispatcherPriority.Background,
             (_, _) => Evaluate(), window.Dispatcher);
         timer.Stop();
@@ -40,7 +42,7 @@ public sealed class AutoCollapseController : IDisposable
         timer.Stop();
         if (!window.IsActive && window.IsVisible && window.WindowState == WindowState.Normal &&
             !keepExpanded() && !IsSuspended && !NativeWindows.ForegroundBelongsToThisProcess())
-            window.WindowState = WindowState.Minimized;
+            collapse();
     }
 
     private void OnDeactivated(object? sender, EventArgs e) => Schedule();
